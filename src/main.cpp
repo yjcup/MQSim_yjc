@@ -265,13 +265,13 @@ int main(int argc, char* argv[])
 		print_help();
 		return 1;
 	}
-
+	// 解析参数
 	command_line_args(argv, ssd_config_file_path, workload_defs_file_path);
 
 	Execution_Parameter_Set* exec_params = new Execution_Parameter_Set;
 	read_configuration_parameters(ssd_config_file_path, exec_params);
 	std::vector<std::vector<IO_Flow_Parameter_Set*>*>* io_scenarios = read_workload_definitions(workload_defs_file_path);
-
+	// 遍历所有场景
 	int cntr = 1;
 	for (auto io_scen = io_scenarios->begin(); io_scen != io_scenarios->end(); io_scen++, cntr++) {
 		time_t start_time = time(0);
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
 		exec_params->Host_Configuration.IO_Flow_Definitions.clear();
 		for (auto io_flow_def = (*io_scen)->begin(); io_flow_def != (*io_scen)->end(); io_flow_def++) {
 			exec_params->Host_Configuration.IO_Flow_Definitions.push_back(*io_flow_def);
-		}
+		}	
 
 		SSD_Device ssd(&exec_params->SSD_Device_Configuration, &exec_params->Host_Configuration.IO_Flow_Definitions);//Create SSD_Device based on the specified parameters
 		exec_params->Host_Configuration.Input_file_path = workload_defs_file_path.substr(0, workload_defs_file_path.find_last_of("."));//Create Host_System based on the specified parameters

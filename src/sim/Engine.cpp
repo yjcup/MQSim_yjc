@@ -83,7 +83,7 @@ namespace MQSimEngine
 				break;
 			}
 
-			EventTreeNode* minNode = _EventList->Get_min_node();
+			EventTreeNode* minNode = _EventList->Get_min_node();	
 			ev = minNode->FirstSimEvent;
 
 			_sim_time = ev->Fire_time;

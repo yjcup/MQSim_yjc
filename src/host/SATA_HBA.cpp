@@ -126,6 +126,7 @@ namespace Host_Components
 
 	void SATA_HBA::Submit_io_request(Host_IO_Request* request)
 	{
+		//添加一条消息就发送一条消息
 		host_requests.push(request);
 		if (host_requests.size() == 1) {
 			Simulator->Register_sim_event(Simulator->Time() + hba_processing_delay, this, NULL, static_cast<int>(HBA_Sim_Events::SUBMIT_IO_REQUEST));

@@ -1,3 +1,4 @@
 MQSim
 build/
-
+*scenario*.xml
+/.vscode

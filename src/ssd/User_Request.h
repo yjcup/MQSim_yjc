@@ -8,6 +8,8 @@
 #include "Host_Interface_Defs.h"
 #include "NVM_Transaction.h"
 
+
+// 将host侧的request改成ssd侧request的形式
 namespace SSD_Components
 {
 	enum class UserRequestType { READ, WRITE };

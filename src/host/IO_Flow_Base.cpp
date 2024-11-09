@@ -28,6 +28,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 	switch (SSD_device_type)
 	{
 	case HostInterface_Types::NVME:
+	// 初始化队列
 		for (uint16_t cmdid = 0; cmdid < (uint16_t)(0xffffffff); cmdid++)
 		{
 			available_command_ids.insert(cmdid);
@@ -36,6 +37,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 		{
 			request_queue_in_memory.push_back(t);
 		}
+		// 分为完成队列和提交队列
 		nvme_queue_pair.Submission_queue_size = nvme_submission_queue_size;
 		nvme_queue_pair.Submission_queue_head = 0;
 		nvme_queue_pair.Submission_queue_tail = 0;
@@ -401,7 +403,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 
 		return sqe;
 	}
-
+	// 提交请求（nvme/sata）
 	void IO_Flow_Base::Submit_io_request(Host_IO_Request* request)
 	{
 		switch (SSD_device_type) {
@@ -413,6 +415,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 					if (nvme_software_request_queue[*available_command_ids.begin()] != NULL) {
 						PRINT_ERROR("Unexpteced situation in IO_Flow_Base! Overwriting an unhandled I/O request in the queue!")
 					} else {
+						// 在主机侧将请求添加到软件队列中，并将请求提交到nvme硬件队列中
 						request->IO_queue_info = *available_command_ids.begin();
 						nvme_software_request_queue[*available_command_ids.begin()] = request;
 						available_command_ids.erase(available_command_ids.begin());
@@ -420,6 +423,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 						NVME_UPDATE_SQ_TAIL(nvme_queue_pair);
 					}
 					request->Enqueue_time = Simulator->Time();
+					//通过pcie通知设备有新的请求过来
 					pcie_root_complex->Write_to_device(nvme_queue_pair.Submission_tail_register_address_on_device, nvme_queue_pair.Submission_queue_tail);//Based on NVMe protocol definition, the updated tail pointer should be informed to the device
 				}
 				break;
