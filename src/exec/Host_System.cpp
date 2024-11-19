@@ -28,7 +28,8 @@ Host_System::Host_System(Host_Parameter_Set* parameters, bool preconditioning_re
 	Simulator->AddObject(this->Link);
 
 	//Create IO flows
-	LHA_type address_range_per_flow = ssd_host_interface->Get_max_logical_sector_address() / parameters->IO_Flow_Definitions.size();
+	LHA_type address_range_per_flow = ssd_host_interface->Get_max_logical_sector_address() / parameters->IO_Flow_Definitions.size();	
+	// 模拟多个io流对ssd进行操作
 	for (uint16_t flow_id = 0; flow_id < parameters->IO_Flow_Definitions.size(); flow_id++) {
 		Host_Components::IO_Flow_Base* io_flow = NULL;
 		//No flow should ask for I/O queue id 0, it is reserved for NVMe Admin command queue pair
@@ -77,8 +78,7 @@ Host_System::Host_System(Host_Parameter_Set* parameters, bool preconditioning_re
 			}
 			default:
 				throw "The specified IO flow type is not supported.\n";
-		}
-		Simulator->AddObject(io_flow);
+		}		Simulator->AddObject(io_flow);
 	}
 	this->PCIe_root_complex->Set_io_flows(&this->IO_flows);
 	if (((SSD_Components::Host_Interface_NVMe*)ssd_host_interface)->GetType() == HostInterface_Types::SATA) {

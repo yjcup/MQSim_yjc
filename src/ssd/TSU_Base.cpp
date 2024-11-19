@@ -79,10 +79,11 @@ namespace SSD_Components
 		for (unsigned int i = 0; i < die_no_per_chip; i++)
 		{
 			transaction_dispatch_slots.clear();
-			planeVector = 0;
-
+			planeVector = 0;//用来设置某个平面是否被操作过
+			// 遍历队列所有请求 取出可以多平面操作的
 			for (Flash_Transaction_Queue::iterator it = sourceQueue1->begin(); it != sourceQueue1->end();)
 			{
+				//遍历队列汇
 				if (transaction_is_ready(*it) && (*it)->Address.DieID == dieID && !(planeVector & 1 << (*it)->Address.PlaneID))
 				{
 					//Check for identical pages when running multiplane command
@@ -98,7 +99,7 @@ namespace SSD_Components
 				}
 				it++;
 			}
-
+			// 优先级低，要是plane还能放的话，就行，还是和之前一样的操作，dieio一样，pageid
 			if (sourceQueue2 != NULL && transaction_dispatch_slots.size() < plane_no_per_die)
 			{
 				for (Flash_Transaction_Queue::iterator it = sourceQueue2->begin(); it != sourceQueue2->end();)

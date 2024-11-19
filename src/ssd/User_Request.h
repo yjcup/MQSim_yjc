@@ -20,13 +20,14 @@ namespace SSD_Components
 		User_Request();
 		IO_Flow_Priority_Class::Priority Priority_class;
 		io_request_id_type ID;
+
 		LHA_type Start_LBA;
 
 		sim_time_type STAT_InitiationTime;
 		sim_time_type STAT_ResponseTime;
 		std::list<NVM_Transaction*> Transaction_list;
 		unsigned int Sectors_serviced_from_cache;
-
+	
 		unsigned int Size_in_byte;
 		unsigned int SizeInSectors;
 		UserRequestType Type;

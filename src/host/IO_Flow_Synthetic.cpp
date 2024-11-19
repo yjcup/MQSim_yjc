@@ -216,6 +216,7 @@ IO_Flow_Synthetic::IO_Flow_Synthetic(const sim_object_id_type &name, uint16_t fl
 	{
 	}
 
+	// 一次提交多个requets
 	void IO_Flow_Synthetic::Execute_simulator_event(MQSimEngine::Sim_Event* event)
 	{
 		if (generator_type == Utils::Request_Generator_Type::BANDWIDTH) {

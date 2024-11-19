@@ -69,6 +69,7 @@ namespace Host_Components
 				message = Message_buffer_toward_ssd_device.front();
 				Message_buffer_toward_ssd_device.pop();
 				pcie_switch->Deliver_to_device(message);
+				//判断是否含有多的消息，如果有就继续注册
 				if (Message_buffer_toward_ssd_device.size() > 0) {
 					Simulator->Register_sim_event(Simulator->Time() + estimate_transfer_time(Message_buffer_toward_ssd_device.front()),
 						this, (void*)(intptr_t)PCIe_Destination_Type::DEVICE, static_cast<int>(PCIe_Link_Event_Type::DELIVER));

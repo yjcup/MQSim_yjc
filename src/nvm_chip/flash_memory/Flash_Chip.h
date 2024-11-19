@@ -17,7 +17,8 @@ namespace NVM
 	namespace FlashMemory
 	{
 		class Flash_Chip : public NVM_Chip
-		{
+		{	
+			//
 			enum class Internal_Status { IDLE, BUSY };
 			enum class Chip_Sim_Event_Type { COMMAND_FINISHED };
 		public:
@@ -49,7 +50,7 @@ namespace NVM
 				if (this->idleDieNo != die_no)
 					STAT_totalOverlappedXferExecTime += (Simulator->Time() - lastTransferStart);
 				this->Dies[command->Address[0].DieID]->STAT_TotalXferTime += (Simulator->Time() - lastTransferStart);
-
+				
 				start_command_execution(command);
 
 				this->lastTransferStart = INVALID_TIME;

@@ -13,6 +13,7 @@ namespace Host_Components
 		sim_time_type Arrival_time;//The time that the request has been generated
 		sim_time_type Enqueue_time;//The time that the request enqueued into the I/O queue
 		LHA_type Start_LBA;
+		//文件系统 块 4kb
 		unsigned int LBA_count;
 		Host_IO_Request_Type Type;
 		uint16_t IO_queue_info;

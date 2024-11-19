@@ -37,6 +37,7 @@ namespace SSD_Components
 		Address_Mapping_Unit_Base* Address_Mapping_Unit;
 		Flash_Block_Manager_Base* BlockManager;
 		GC_and_WL_Unit_Base* GC_and_WL_Unit;
+		// 事务调度单位
 		TSU_Base * TSU;
 		NVM_PHY_ONFI* PHY;
 		void Report_results_in_XML(std::string name_prefix, Utils::XmlWriter& xmlwriter);

@@ -14,10 +14,11 @@ namespace SSD_Components
 {
 	enum class NVDDR2_SimEventType
 	{
-		READ_DATA_TRANSFERRED, READ_CMD_ADDR_TRANSFERRED,
-		PROGRAM_CMD_ADDR_DATA_TRANSFERRED, 
-		PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED, 
-		ERASE_SETUP_COMPLETED
+		READ_DATA_TRANSFERRED,  //模拟数据已经传输
+		READ_CMD_ADDR_TRANSFERRED,//读取命令已经传输
+		PROGRAM_CMD_ADDR_DATA_TRANSFERRED, // 编程命令、地址和数据已传输
+		PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED, //编程回写命令和地址已传输
+		ERASE_SETUP_COMPLETED// 擦除操作设置完成
 	};
 
 	class DieBookKeepingEntry
@@ -69,10 +70,18 @@ namespace SSD_Components
 		}
 	};
 
+
+	/*
+	ChipBookKeepingEntry 类用于存储和管理与存储芯片（如 NAND Flash 存储芯片）相关的状态和元数据，
+	通常用于仿真或模拟存储设备的行为。这个类提供了芯片命令的跟踪、挂起/恢复处理、以及多个 Die 的状态管理等功能。
+	下面是对该类各成员的详细解释：
+	
+	*/
 	class ChipBookKeepingEntry
 	{
 	public:
 		ChipStatus Status;
+		//指向die
 		DieBookKeepingEntry* Die_book_keeping_records;
 		sim_time_type Expected_command_exec_finish_time;
 		sim_time_type Last_transfer_finish_time;

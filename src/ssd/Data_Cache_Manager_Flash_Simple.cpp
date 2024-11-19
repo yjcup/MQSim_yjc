@@ -60,7 +60,9 @@ namespace SSD_Components
 		if (user_request->Type == UserRequestType::READ) {
 			switch (caching_mode_per_input_stream[user_request->Stream_id])
 			{
+				//关闭缓存
 				case Caching_Mode::TURNED_OFF:
+				// 直接进行地址转换
 					static_cast<FTL*>(nvm_firmware)->Address_Mapping_Unit->Translate_lpa_to_ppa_and_dispatch(user_request->Transaction_list);
 					return;
 				case Caching_Mode::WRITE_CACHE:

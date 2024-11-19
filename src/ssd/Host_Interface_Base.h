@@ -68,6 +68,37 @@ namespace SSD_Components
 		std::vector<Input_Stream_Base*> input_streams;
 	};
 
+	/*
+	
+	
+			主机接口：
+			处理主机和SSD之间的通信接口
+			管理PCIe通信
+			处理用户请求的到达和服务
+			管理数据流
+	 主要工作流程：主机请求 -> PCIe接口 -> 请求获取单元 -> 输入流管理 -> 缓存管理 -> SSD处理
+
+				+----------------+          PCIe总线           +------------------+
+			|     主机       | <======================>    |       SSD        |
+			| (Host System)  |                            |                  |
+			+----------------+                            |  +-------------+ |
+														|  |Host Interface| |
+														|  |  - 请求处理   | |
+														|  |  - 协议解析   | |
+														|  |  - 数据缓存   | |
+														|  +-------------+ |
+														|        ↓        |
+														|  +-------------+ |
+														|  | Flash控制器  | |
+														|  +-------------+ |
+														+------------------+
+
+	
+	
+	
+	
+	 */
+
 	class Request_Fetch_Unit_Base
 	{
 	public:
@@ -103,10 +134,20 @@ namespace SSD_Components
 		virtual ~Host_Interface_Base();
 		void Setup_triggers();
 		void Validate_simulation_config();
-
+		/**
+		 * 
+		 * typedef - 定义一个新的类型名
+			void - 函数返回类型
+			(*...) - 表示这是一个函数指针
+			UserRequestArrivedSignalHandlerType - 新类型的名字
+			(User_Request*) - 函数接受一个 User_Request 指针作为参数
+		 * 	UserRequestArrivedSignalHandlerType(User_Request )
+		 * 
+		 */
 		typedef void(*UserRequestArrivedSignalHandlerType) (User_Request*);
 		void Connect_to_user_request_arrived_signal(UserRequestArrivedSignalHandlerType function)
 		{
+	
 			connected_user_request_arrived_signal_handlers.push_back(function);
 		}
 
@@ -139,8 +180,10 @@ namespace SSD_Components
 
 		void broadcast_user_request_arrival_signal(User_Request* user_request)
 		{
+			// 调用所有的处理函数来处理请求
 			for (std::vector<UserRequestArrivedSignalHandlerType>::iterator it = connected_user_request_arrived_signal_handlers.begin();
 				it != connected_user_request_arrived_signal_handlers.end(); it++) {
+				//调用vector中所有的请求处理函数
 				(*it)(user_request);
 			}
 		}

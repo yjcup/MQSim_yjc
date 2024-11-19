@@ -61,7 +61,7 @@ namespace SSD_Components
 
 	void Data_Cache_Manager_Base::handle_user_request_arrived_signal(User_Request* user_request)
 	{
-		_my_instance->process_new_user_request(user_request);
+		_my_instance->process_new_user_request(user_request);	
 	}
 
 	void Data_Cache_Manager_Base::Set_host_interface(Host_Interface_Base* host_interface)

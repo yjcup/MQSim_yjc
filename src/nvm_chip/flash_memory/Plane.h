@@ -16,6 +16,7 @@ namespace NVM
 			Plane(unsigned int BlocksNoPerPlane, unsigned int PagesNoPerBlock);
 			~Plane();
 			Block** Blocks;
+			//  一些统计数据
 			unsigned int Healthy_block_no;
 			unsigned long Read_count;                     //how many read count in the process of workload
 			unsigned long Progam_count;

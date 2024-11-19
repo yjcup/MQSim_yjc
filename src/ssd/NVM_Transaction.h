@@ -9,9 +9,13 @@
 namespace SSD_Components
 {
 	class User_Request;
-	
+	//事务类型
 	enum class Transaction_Type { READ, WRITE, ERASE, UNKOWN };
-	enum class Transaction_Source_Type { USERIO, CACHE, GC_WL, MAPPING };
+	enum class Transaction_Source_Type { 	USERIO, // 用户I/O请求
+											CACHE,  // 缓存请求
+											GC_WL, // 垃圾回收写入请求
+											MAPPING // 地址映射请求
+	};
 
 	class NVM_Transaction
 	{

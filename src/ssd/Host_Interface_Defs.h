@@ -57,7 +57,15 @@ struct Submission_Queue_Entry
 	uint64_t Metadata_pointer_1;
 	uint64_t PRP_entry_1;
 	uint64_t PRP_entry_2;
-	uint32_t Command_specific[6];
+	uint32_t Command_specific[6]; 
+
+	/**
+	 * 	Command_specific[0] 是前32位 【1】是后32位 nvme的限制
+	 * 
+	 * 	cmd[2] 是lba count 数量
+	 * 
+	 * 	
+	 */
 };
 
 #endif // !NVME_DEFINISIONS_H

@@ -23,6 +23,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 {
 	SSD_Device *device = this;
 	my_instance = device; //used for static functions
+	//将设备传入sim 此时只有一个dev
 	Simulator->AddObject(device);
 
 	device->Preconditioning_required = parameters->Enabled_Preconditioning;

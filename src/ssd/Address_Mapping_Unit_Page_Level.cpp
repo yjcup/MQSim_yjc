@@ -476,13 +476,14 @@ namespace SSD_Components
 	{
 		return domains[stream_id]->No_of_inserted_entries_in_preconditioning;
 	}
-
+	//
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 			it != transactionList.end(); ) {
 			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
 				//iterator should be post-incremented since the iterator may be deleted from list
+				//如果正在被垃圾回收，进行处理
 				manage_user_transaction_facing_barrier((NVM_Transaction_Flash*)*(it++));
 			} else {
 				query_cmt((NVM_Transaction_Flash*)(*it++));
@@ -494,6 +495,7 @@ namespace SSD_Components
 			for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 				it != transactionList.end(); it++) {
 				if (((NVM_Transaction_Flash*)(*it))->Physical_address_determined) {
+					// 提交事务
 					ftl->TSU->Submit_transaction(static_cast<NVM_Transaction_Flash*>(*it));
 					if (((NVM_Transaction_Flash*)(*it))->Type == Transaction_Type::WRITE) {
 						if (((NVM_Transaction_Flash_WR*)(*it))->RelatedRead != NULL) {

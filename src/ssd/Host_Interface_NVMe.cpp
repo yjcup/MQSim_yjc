@@ -92,6 +92,7 @@ inline void Input_Stream_Manager_NVMe::Handle_new_arrived_request(User_Request *
 inline void Input_Stream_Manager_NVMe::Handle_arrived_write_data(User_Request *request)
 {
 	segment_user_request(request);
+	// 
 	((Host_Interface_NVMe *)host_interface)->broadcast_user_request_arrival_signal(request);
 }
 
@@ -169,9 +170,9 @@ inline void Input_Stream_Manager_NVMe::inform_host_request_completed(stream_id_t
 
 void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 {
-	LHA_type lsa = user_request->Start_LBA;
+	LHA_type lsa = user_request->Start_LBA; // 起始地址+长度
 	LHA_type lsa2 = user_request->Start_LBA;
-	unsigned int req_size = user_request->SizeInSectors;
+	unsigned int req_size = user_request->SizeInSectors; //扇区数量
 
 	page_status_type access_status_bitmap = 0;
 	unsigned int handled_sectors_count = 0;
@@ -183,13 +184,16 @@ void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 		{
 			lsa = ((Input_Stream_NVMe *)input_streams[user_request->Stream_id])->Start_logical_sector_address + (lsa % (((Input_Stream_NVMe *)input_streams[user_request->Stream_id])->End_logical_sector_address - (((Input_Stream_NVMe *)input_streams[user_request->Stream_id])->Start_logical_sector_address)));
 		}
+		//修改为从0开始
 		LHA_type internal_lsa = lsa - ((Input_Stream_NVMe *)input_streams[user_request->Stream_id])->Start_logical_sector_address; //For each flow, all lsa's should be translated into a range starting from zero
-
+		//还可以处理的扇区数  以这个位单位
 		transaction_size = host_interface->sectors_per_page - (unsigned int)(lsa % host_interface->sectors_per_page);
+		// 还要确保请求的总页数 
 		if (handled_sectors_count + transaction_size >= req_size)
 		{
 			transaction_size = req_size - handled_sectors_count;
 		}
+		// 计算扇区属于哪一个逻辑页 整个while循环就是将sector拼成一个page，一个page就是一个transaction
 		LPA_type lpa = internal_lsa / host_interface->sectors_per_page;
 
 		page_status_type temp = ~(0xffffffffffffffff << (int)transaction_size);
@@ -197,8 +201,11 @@ void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 
 		if (user_request->Type == UserRequestType::READ)
 		{
+			// 每一页就是一个事务
 			NVM_Transaction_Flash_RD *transaction = new NVM_Transaction_Flash_RD(Transaction_Source_Type::USERIO, user_request->Stream_id,
 																				 transaction_size * SECTOR_SIZE_IN_BYTE, lpa, NO_PPA, user_request, user_request->Priority_class, 0, access_status_bitmap, CurrentTimeStamp);
+			
+			//将请求写入
 			user_request->Transaction_list.push_back(transaction);
 			input_streams[user_request->Stream_id]->STAT_number_of_read_transactions++;
 		}
@@ -281,7 +288,7 @@ void Request_Fetch_Unit_NVMe::Process_pcie_read_message(uint64_t address, void *
 	Host_Interface_NVMe *hi = (Host_Interface_NVMe *)host_interface;
 	DMA_Req_Item *dma_req_item = dma_list.front();
 	dma_list.pop_front();
-
+	// 对到达ssd的请求
 	switch (dma_req_item->Type)
 	{
 	case DMA_Req_Type::REQUEST_INFO:
@@ -289,14 +296,14 @@ void Request_Fetch_Unit_NVMe::Process_pcie_read_message(uint64_t address, void *
 		User_Request *new_request = new User_Request;
 		new_request->IO_command_info = payload;
 		new_request->Stream_id = (stream_id_type)((uint64_t)(dma_req_item->object));
-		new_request->Priority_class = ((Input_Stream_Manager_NVMe *)host_interface->input_stream_manager)->Get_priority_class(new_request->Stream_id);
-		new_request->STAT_InitiationTime = Simulator->Time();
+		new_request->Priority_class = ((Input_Stream_Manager_NVMe *)host_interface->input_stream_manager)->Get_priority_class(new_request->Stream_id);		new_request->STAT_InitiationTime = Simulator->Time();
 		Submission_Queue_Entry *sqe = (Submission_Queue_Entry *)payload;
 		switch (sqe->Opcode)
 		{
 		case NVME_READ_OPCODE:
 			new_request->Type = UserRequestType::READ;
 			new_request->Start_LBA = ((LHA_type)sqe->Command_specific[1]) << 31 | (LHA_type)sqe->Command_specific[0]; //Command Dword 10 and Command Dword 11
+			//扇区数量 
 			new_request->SizeInSectors = sqe->Command_specific[2] & (LHA_type)(0x0000ffff);
 			new_request->Size_in_byte = new_request->SizeInSectors * SECTOR_SIZE_IN_BYTE;
 			break;

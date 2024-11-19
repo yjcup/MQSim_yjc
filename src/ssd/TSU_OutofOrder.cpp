@@ -168,6 +168,7 @@ void TSU_OutOfOrder::Schedule()
 			{
 			case Transaction_Source_Type::CACHE:
 			case Transaction_Source_Type::USERIO:
+				//存放到某个channel的某个chip上
 				UserReadTRQueue[(*it)->Address.ChannelID][(*it)->Address.ChipID].push_back((*it));
 				break;
 			case Transaction_Source_Type::MAPPING:
@@ -206,13 +207,17 @@ void TSU_OutOfOrder::Schedule()
 	}
 
 	for (flash_channel_ID_type channelID = 0; channelID < channel_count; channelID++)
-	{
+	{	
+		// 如果通道空闲，
 		if (_NVMController->Get_channel_status(channelID) == BusChannelStatus::IDLE)
-		{
+		{	
+			//  这个读写队列不是放到chip上的，是放到对应实现队列上的
+			// 再遍历每一个chip
 			for (unsigned int i = 0; i < chip_no_per_channel; i++)
 			{
 				NVM::FlashMemory::Flash_Chip *chip = _NVMController->Get_chip(channelID, Round_robin_turn_of_channel[channelID]);
 				//The TSU does not check if the chip is idle or not since it is possible to suspend a busy chip and issue a new command
+				
 				process_chip_requests(chip);
 				Round_robin_turn_of_channel[channelID] = (flash_chip_ID_type)(Round_robin_turn_of_channel[channelID] + 1) % chip_no_per_channel;
 				if (_NVMController->Get_channel_status(chip->ChannelID) != BusChannelStatus::IDLE)
@@ -226,6 +231,7 @@ void TSU_OutOfOrder::Schedule()
 
 bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip)
 {
+	// 分为两种不同的优先级
 	Flash_Transaction_Queue *sourceQueue1 = NULL, *sourceQueue2 = NULL;
 
 	//Flash transactions that are related to FTL mapping data have the highest priority
@@ -325,7 +331,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 	default:
 		return false;
 	}
-
+	//实际执行读操作
 	issue_command_to_chip(sourceQueue1, sourceQueue2, Transaction_Type::READ, suspensionRequired);
 
 	return true;

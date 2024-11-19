@@ -409,13 +409,14 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 		switch (SSD_device_type) {
 			case HostInterface_Types::NVME:
 				//If either of software or hardware queue is full
-				if (NVME_SQ_FULL(nvme_queue_pair) || available_command_ids.size() == 0) {
+ 				if (NVME_SQ_FULL(nvme_queue_pair) || available_command_ids.size() == 0) {
+					// 如果io队列满的话，就将请求放入waiting
 					waiting_requests.push_back(request);
 				} else {
 					if (nvme_software_request_queue[*available_command_ids.begin()] != NULL) {
 						PRINT_ERROR("Unexpteced situation in IO_Flow_Base! Overwriting an unhandled I/O request in the queue!")
 					} else {
-						// 在主机侧将请求添加到软件队列中，并将请求提交到nvme硬件队列中
+						// 更新SQ
 						request->IO_queue_info = *available_command_ids.begin();
 						nvme_software_request_queue[*available_command_ids.begin()] = request;
 						available_command_ids.erase(available_command_ids.begin());

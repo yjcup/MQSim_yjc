@@ -99,6 +99,7 @@ namespace NVM
 			return Dies[die_id]->Planes[plane_id]->Blocks[block_id]->Pages[page_id].Metadata.LPA;
 		}
 
+		// 执行命令
 		void Flash_Chip::start_command_execution(Flash_Command* command)
 		{
 			Die* targetDie = Dies[command->Address[0].DieID];

@@ -1,6 +1,7 @@
 CC        := g++
 LD        := g++
-CC_FLAGS := -std=c++11 -O3 -g
+# 修改优化级别，方便debug
+CC_FLAGS := -std=c++11 -O0 -g
 
 MODULES   := exec host nvm_chip nvm_chip/flash_memory sim ssd utils
 SRC_DIR   := $(addprefix src/,$(MODULES)) src
