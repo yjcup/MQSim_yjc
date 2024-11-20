@@ -2,3 +2,4 @@ MQSim
 build/
 *scenario*.xml
 /.vscode
+*.sh
