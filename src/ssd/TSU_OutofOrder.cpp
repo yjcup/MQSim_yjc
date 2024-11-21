@@ -181,11 +181,13 @@ void TSU_OutOfOrder::Schedule()
 				PRINT_ERROR("TSU_OutOfOrder: unknown source type for a read transaction!")
 			}
 			break;
+
 		case Transaction_Type::WRITE:
 			switch ((*it)->Source)
 			{
 			case Transaction_Source_Type::CACHE:
 			case Transaction_Source_Type::USERIO:
+				// 如果是写队列 他是如何确定要写到哪一个的呢
 				UserWriteTRQueue[(*it)->Address.ChannelID][(*it)->Address.ChipID].push_back((*it));
 				break;
 			case Transaction_Source_Type::MAPPING:
@@ -331,7 +333,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 	default:
 		return false;
 	}
-	//实际执行读操作
+	//实际执行读操作 之后遍历空闲通道中开始执行，
 	issue_command_to_chip(sourceQueue1, sourceQueue2, Transaction_Type::READ, suspensionRequired);
 
 	return true;

@@ -120,7 +120,7 @@ namespace SSD_Components
 					it++;
 				}
 			}
-
+			// 只要大于0就开始发送
 			if (transaction_dispatch_slots.size() > 0)
 			{
 				_NVMController->Send_command_to_chip(transaction_dispatch_slots);
