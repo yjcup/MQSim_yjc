@@ -352,14 +352,16 @@ namespace SSD_Components {
 			case NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED:
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID << ": READ_CMD_ADDR_TRANSFERRED ")
 				// 
-				//晚上命令传输后的事务
+				//执行命令
 				targetChip->EndCMDXfer(dieBKE->ActiveCommand);
 				for (auto tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
 				}
+				// 命令传输结束 开始读取
 				chipBKE->OngoingDieCMDTransfers.pop();
 				chipBKE->No_of_active_dies++;
 				if (chipBKE->OngoingDieCMDTransfers.size() > 0) {
+					// 执行内部并行的操作，当发现还有其他的die在进行命令传输的时候，可以并行执行，提升执行速度
 					perform_interleaved_cmd_data_transfer(targetChip, chipBKE->OngoingDieCMDTransfers.front());
 					return;
 				} else {
@@ -409,6 +411,7 @@ namespace SSD_Components {
 				if (tr->ExecutionMode != ExecutionModeType::COPYBACK)
 	#endif
 				broadcastTransactionServicedSignal(dieBKE->ActiveTransfer);
+				// 完成数据处理工作，之后设置响应的状态
 
 				for (std::list<NVM_Transaction_Flash*>::iterator it = dieBKE->ActiveTransactions.begin();
 					it != dieBKE->ActiveTransactions.end(); it++) {
@@ -480,6 +483,7 @@ namespace SSD_Components {
 		} else if (WaitingReadTX[channel_id].size() > 0) {
 			NVM_Transaction_Flash_RD* waitingTR = (NVM_Transaction_Flash_RD*)WaitingReadTX[channel_id].front();
 			WaitingReadTX[channel_id].pop_front();
+			//传输数据
 			transfer_read_data_from_chip(&bookKeepingTable[channel_id][waitingTR->Address.ChipID],
 				&(bookKeepingTable[channel_id][waitingTR->Address.ChipID].Die_book_keeping_records[waitingTR->Address.DieID]), waitingTR);
 
@@ -635,6 +639,7 @@ namespace SSD_Components {
 		dieBKE->ActiveTransfer = tr;
 		channels[tr->Address.ChannelID]->Chips[tr->Address.ChipID]->StartDataOutXfer();
 		chipBKE->Status = ChipStatus::DATA_OUT;
+		// 将读取的数据传输回去
 		Simulator->Register_sim_event(Simulator->Time() + NVDDR2DataOutTransferTime(tr->Data_and_metadata_size_in_byte, channels[tr->Address.ChannelID]),
 			this, dieBKE, (int)NVDDR2_SimEventType::READ_DATA_TRANSFERRED);
 

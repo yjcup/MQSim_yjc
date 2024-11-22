@@ -123,6 +123,8 @@ namespace SSD_Components
 			// 只要大于0就开始发送
 			if (transaction_dispatch_slots.size() > 0)
 			{
+
+				// 给die发送消息，就是注册一个回调函数
 				_NVMController->Send_command_to_chip(transaction_dispatch_slots);
 				transaction_dispatch_slots.clear();
 				dieID = (dieID + 1) % die_no_per_chip;

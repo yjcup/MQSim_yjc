@@ -207,7 +207,7 @@ void TSU_OutOfOrder::Schedule()
 			break;
 		}
 	}
-
+	// 遍历每套通道
 	for (flash_channel_ID_type channelID = 0; channelID < channel_count; channelID++)
 	{	
 		// 如果通道空闲，
@@ -215,8 +215,10 @@ void TSU_OutOfOrder::Schedule()
 		{	
 			//  这个读写队列不是放到chip上的，是放到对应实现队列上的
 			// 再遍历每一个chip
+			// 这里i只是次数，真正控制位置的是轮询指针
 			for (unsigned int i = 0; i < chip_no_per_channel; i++)
 			{
+				// 使用轮询的方式可以非常方便从上一次由于繁忙而导致退出循环的地方开始
 				NVM::FlashMemory::Flash_Chip *chip = _NVMController->Get_chip(channelID, Round_robin_turn_of_channel[channelID]);
 				//The TSU does not check if the chip is idle or not since it is possible to suspend a busy chip and issue a new command
 				

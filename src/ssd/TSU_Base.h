@@ -77,6 +77,7 @@ protected:
 	sim_time_type writeReasonableSuspensionTimeForRead;
 	sim_time_type eraseReasonableSuspensionTimeForRead; //the time period
 	sim_time_type eraseReasonableSuspensionTimeForWrite;
+	//  轮询数组
 	flash_chip_ID_type *Round_robin_turn_of_channel; //Used for round-robin service of the chips in channels
 
 	static TSU_Base *_my_instance;
