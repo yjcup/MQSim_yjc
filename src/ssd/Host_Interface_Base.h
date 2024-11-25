@@ -110,6 +110,8 @@ namespace SSD_Components
 		virtual void Process_pcie_write_message(uint64_t, void *, unsigned int) = 0;
 		virtual void Process_pcie_read_message(uint64_t, void *, unsigned int) = 0;
 	protected:
+
+		// 请求信息的dma，写入信息的dma，将信息写入设备或者内存
 		enum class DMA_Req_Type { REQUEST_INFO, WRITE_DATA };
 		struct DMA_Req_Item
 		{
@@ -153,9 +155,11 @@ namespace SSD_Components
 
 		void Consume_pcie_message(Host_Components::PCIe_Message* message)
 		{
+			//如果读完成
 			if (message->Type == Host_Components::PCIe_Message_Type::READ_COMP) {
 				request_fetch_unit->Process_pcie_read_message(message->Address, message->Payload, message->Payload_size);
 			} else {
+				// 读写请求都是写队列
 				request_fetch_unit->Process_pcie_write_message(message->Address, message->Payload, message->Payload_size);
 			}
 			delete message;

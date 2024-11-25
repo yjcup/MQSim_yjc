@@ -65,7 +65,7 @@ namespace Host_Components
 						this, (void*)(intptr_t)PCIe_Destination_Type::HOST, static_cast<int>(PCIe_Link_Event_Type::DELIVER));
 				}
 				break;
-			case PCIe_Destination_Type::DEVICE:
+			case PCIe_Destination_Type::DEVICE:					
 				message = Message_buffer_toward_ssd_device.front();
 				Message_buffer_toward_ssd_device.pop();
 				pcie_switch->Deliver_to_device(message);

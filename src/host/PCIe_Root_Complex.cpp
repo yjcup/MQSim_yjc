@@ -66,7 +66,7 @@ namespace Host_Components
 					break;
 			}
 		}
-
+		// 将读取的命令发送到nvme
 		pcie_link->Deliver(new_pcie_message);
 	}
 	

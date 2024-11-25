@@ -129,6 +129,8 @@ void IO_Flow_Trace_Based::Validate_simulation_config()
 {
 }
 
+
+//发起一个io请求 
 void IO_Flow_Trace_Based::Execute_simulator_event(MQSimEngine::Sim_Event *)
 {
 	Host_IO_Request *request = Generate_next_request();

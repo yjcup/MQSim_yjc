@@ -39,6 +39,7 @@ stream_id_type Input_Stream_Manager_NVMe::Create_new_stream(IO_Flow_Priority_Cla
 
 inline void Input_Stream_Manager_NVMe::Submission_queue_tail_pointer_update(stream_id_type stream_id, uint16_t tail_pointer_value)
 {
+	// 更新队列
 	((Input_Stream_NVMe *)input_streams[stream_id])->Submission_tail = tail_pointer_value;
 
 	if (((Input_Stream_NVMe *)input_streams[stream_id])->On_the_fly_requests < Queue_fetch_size)
@@ -68,7 +69,7 @@ inline void Input_Stream_Manager_NVMe::Completion_queue_head_pointer_update(stre
 
 inline void Input_Stream_Manager_NVMe::Handle_new_arrived_request(User_Request *request)
 {
-	((Input_Stream_NVMe *)input_streams[request->Stream_id])->Submission_head_informed_to_host++;
+ 	((Input_Stream_NVMe *)input_streams[request->Stream_id])->Submission_head_informed_to_host++;
 	if (((Input_Stream_NVMe *)input_streams[request->Stream_id])->Submission_head_informed_to_host == ((Input_Stream_NVMe *)input_streams[request->Stream_id])->Submission_queue_size)
 	{ //Circular queue implementation
 		((Input_Stream_NVMe *)input_streams[request->Stream_id])->Submission_head_informed_to_host = 0;
@@ -197,7 +198,7 @@ void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 		LPA_type lpa = internal_lsa / host_interface->sectors_per_page;
 
 		page_status_type temp = ~(0xffffffffffffffff << (int)transaction_size);
-		access_status_bitmap = temp << (int)(internal_lsa % host_interface->sectors_per_page);
+ 		access_status_bitmap = temp << (int)(internal_lsa % host_interface->sectors_per_page);
 
 		if (user_request->Type == UserRequestType::READ)
 		{
@@ -228,8 +229,10 @@ void Request_Fetch_Unit_NVMe::Process_pcie_write_message(uint64_t address, void 
 {
 	Host_Interface_NVMe *hi = (Host_Interface_NVMe *)host_interface;
 	uint64_t val = (uint64_t)payload;
+	// 应该是根据不同的io队列 来的
 	switch (address)
 	{
+		// 关键是这个流是干嘛的
 	case SUBMISSION_QUEUE_REGISTER_1:
 		((Input_Stream_Manager_NVMe *)(hi->input_stream_manager))->Submission_queue_tail_pointer_update(0, (uint16_t)val);
 		break;
@@ -285,10 +288,13 @@ void Request_Fetch_Unit_NVMe::Process_pcie_write_message(uint64_t address, void 
 
 void Request_Fetch_Unit_NVMe::Process_pcie_read_message(uint64_t address, void *payload, unsigned int payload_size)
 {
+
+    //
 	Host_Interface_NVMe *hi = (Host_Interface_NVMe *)host_interface;
 	DMA_Req_Item *dma_req_item = dma_list.front();
 	dma_list.pop_front();
 	// 对到达ssd的请求
+	//对于dma来说，只有两种情况，要么是请求数据来了， 要么是写数据
 	switch (dma_req_item->Type)
 	{
 	case DMA_Req_Type::REQUEST_INFO:
@@ -328,11 +334,13 @@ void Request_Fetch_Unit_NVMe::Process_pcie_read_message(uint64_t address, void *
 	}
 	delete dma_req_item;
 }
-
+	//从host主机抓取请求
 void Request_Fetch_Unit_NVMe::Fetch_next_request(stream_id_type stream_id)
 {
 	DMA_Req_Item *dma_req_item = new DMA_Req_Item;
 	dma_req_item->Type = DMA_Req_Type::REQUEST_INFO;
+
+	// 这个要确定从哪个流来抓去数据
 	dma_req_item->object = (void *)(intptr_t)stream_id;
 	dma_list.push_back(dma_req_item);
 

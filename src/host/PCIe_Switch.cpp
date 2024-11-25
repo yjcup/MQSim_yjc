@@ -8,8 +8,7 @@ namespace Host_Components
 	}
 
 	void PCIe_Switch::Deliver_to_device(PCIe_Message* message)
-	{
-		host_interface->Consume_pcie_message(message);
+	{		host_interface->Consume_pcie_message(message);
 	}
 
 	void PCIe_Switch::Send_to_host(PCIe_Message* message)

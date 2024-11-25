@@ -357,7 +357,6 @@ namespace SSD_Components {
 				for (auto tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
 				}
-				// 命令传输结束 开始读取
 				chipBKE->OngoingDieCMDTransfers.pop();
 				chipBKE->No_of_active_dies++;
 				if (chipBKE->OngoingDieCMDTransfers.size() > 0) {
@@ -410,8 +409,8 @@ namespace SSD_Components {
 	#if 0
 				if (tr->ExecutionMode != ExecutionModeType::COPYBACK)
 	#endif
-				broadcastTransactionServicedSignal(dieBKE->ActiveTransfer);
 				// 完成数据处理工作，之后设置响应的状态
+				broadcastTransactionServicedSignal(dieBKE->ActiveTransfer);
 
 				for (std::list<NVM_Transaction_Flash*>::iterator it = dieBKE->ActiveTransactions.begin();
 					it != dieBKE->ActiveTransactions.end(); it++) {
@@ -500,6 +499,7 @@ namespace SSD_Components {
 		broadcastChannelIdleSignal(channel_id);
 	}
 
+	//
 	inline void NVM_PHY_ONFI_NVDDR2::handle_ready_signal_from_chip(NVM::FlashMemory::Flash_Chip* chip, NVM::FlashMemory::Flash_Command* command)
 	{
 		ChipBookKeepingEntry *chipBKE = &_my_instance->bookKeepingTable[chip->ChannelID][chip->ChipID];

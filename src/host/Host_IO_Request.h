@@ -7,6 +7,9 @@ namespace Host_Components
 {
 	enum class Host_IO_Request_Type { READ, WRITE };
 	// request请求模拟，只有两种类型，读和写，再加上起始地址和逻辑块数量共同构成一次请求
+	// 0 write  1 read
+
+	// trace 文件中的device_num好像没用，没有读取到request中
 	class Host_IO_Request
 	{
 	public:

@@ -480,7 +480,7 @@ namespace SSD_Components
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
-			it != transactionList.end(); ) {
+ 			it != transactionList.end(); ) {
 			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
 				//iterator should be post-incremented since the iterator may be deleted from list
 				//如果正在被垃圾回收，进行处理
@@ -514,7 +514,7 @@ namespace SSD_Components
 		// 统计数据
 		stream_id_type stream_id = transaction->Stream_id;
 		Stats::total_CMT_queries++;
-		Stats::total_CMT_queries_per_stream[stream_id]++;
+ 		Stats::total_CMT_queries_per_stream[stream_id]++;
 		//映射表是是否能访问
 		if (domains[stream_id]->Mapping_entry_accessible(ideal_mapping_table, stream_id, transaction->LPA))//Either limited or unlimited CMT
 		{

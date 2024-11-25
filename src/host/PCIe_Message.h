@@ -6,6 +6,7 @@
 namespace Host_Components
 {
 	enum class PCIe_Destination_Type {HOST, DEVICE};
+	//读请求 写请求 读完成
 	enum class PCIe_Message_Type {READ_REQ, WRITE_REQ, READ_COMP};
 	
 	class PCIe_Message
