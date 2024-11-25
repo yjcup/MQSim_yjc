@@ -138,6 +138,7 @@ namespace SSD_Components {
 
 		/*If this is not a die-interleaved command execution, and the channel is already busy,
 		* then something illegarl is happening*/
+		//如果没有东西传输而且通道还繁忙的话 
 		if (target_channel->GetStatus() == BusChannelStatus::BUSY && chipBKE->OngoingDieCMDTransfers.size() == 0) {
 			PRINT_ERROR("Bus " << target_channel->ChannelID << ": starting communication on a busy flash channel!");
 		}
@@ -199,7 +200,8 @@ namespace SSD_Components {
 					it != transaction_list.end(); it++) {
 					(*it)->STAT_transfer_time += target_channel->ReadCommandTime[transaction_list.size()];
 				}
-				//检查
+				//如果待传输的队列未可以直接传输
+
 				if (chipBKE->OngoingDieCMDTransfers.size() == 0) {
 					targetChip->StartCMDXfer();
 					chipBKE->Status = ChipStatus::CMD_IN;
@@ -210,6 +212,7 @@ namespace SSD_Components {
 					dieBKE->DieInterleavedTime = suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 					chipBKE->Last_transfer_finish_time += suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 				}
+				// 如果里面有，说明还在执行，可以直接放进去就行
 				chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
 				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
@@ -319,7 +322,7 @@ namespace SSD_Components {
 			default:
 				throw std::invalid_argument("NVM_PHY_ONFI_NVDDR2: Unhandled event specified!");
 		}
-
+		// 设置status未busy
 		target_channel->SetStatus(BusChannelStatus::BUSY, targetChip);
 	}
 
@@ -342,10 +345,11 @@ namespace SSD_Components {
 	void NVM_PHY_ONFI_NVDDR2::Execute_simulator_event(MQSimEngine::Sim_Event* ev)
 	{	
 		//包装了transations
-		DieBookKeepingEntry* dieBKE = (DieBookKeepingEntry*)ev->Parameters;
+ 		DieBookKeepingEntry* dieBKE = (DieBookKeepingEntry*)ev->Parameters;
 		flash_channel_ID_type channel_id = dieBKE->ActiveTransactions.front()->Address.ChannelID;
 		ONFI_Channel_NVDDR2* targetChannel = channels[channel_id];
 		NVM::FlashMemory::Flash_Chip* targetChip = targetChannel->Chips[dieBKE->ActiveTransactions.front()->Address.ChipID];
+		//对应的chip的元数据
 		ChipBookKeepingEntry *chipBKE = &bookKeepingTable[channel_id][targetChip->ChipID];
 
 		switch ((NVDDR2_SimEventType)ev->Type) {
@@ -357,6 +361,7 @@ namespace SSD_Components {
 				for (auto tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
 				}
+				// 命令传输完毕，从队列中取出
 				chipBKE->OngoingDieCMDTransfers.pop();
 				chipBKE->No_of_active_dies++;
 				if (chipBKE->OngoingDieCMDTransfers.size() > 0) {
@@ -495,7 +500,8 @@ namespace SSD_Components {
 			return;
 		}
 
-		//If the execution reaches here, then the bus channel became idle
+		//If the execution reaches here, then the bus channel became idle 
+		//1. 该通道的其他其他chip可以开始读取了
 		broadcastChannelIdleSignal(channel_id);
 	}
 
@@ -655,6 +661,7 @@ namespace SSD_Components {
 
 		switch (bookKeepingEntry->ActiveTransactions.front()->Type)
 		{
+			// 如果该队列中还存在，那么执行开始执行传输命令
 			case Transaction_Type::READ:
 				chip->StartCMDXfer();
 				bookKeepingTable[chip->ChannelID][chip->ChipID].Status = ChipStatus::CMD_IN;

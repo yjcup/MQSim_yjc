@@ -44,6 +44,7 @@ namespace Host_Components
 		sim_time_type estimate_transfer_time(PCIe_Message* message)
 		{
 			switch (message->Type) {
+				// 都是通过pcie传送的
 				case PCIe_Message_Type::READ_COMP:
 				case PCIe_Message_Type::WRITE_REQ:
 				{

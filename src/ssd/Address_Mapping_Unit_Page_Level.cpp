@@ -480,7 +480,7 @@ namespace SSD_Components
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
- 			it != transactionList.end(); ) {
+  			it != transactionList.end(); ) {
 			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
 				//iterator should be post-incremented since the iterator may be deleted from list
 				//如果正在被垃圾回收，进行处理

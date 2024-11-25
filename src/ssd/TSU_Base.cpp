@@ -43,11 +43,12 @@ namespace SSD_Components
 	{
 		//TSU does nothing. The generator of the transaction will handle it.
 	}
-
+   
 	void TSU_Base::handle_channel_idle_signal(flash_channel_ID_type channelID)
-	{
+	{	
 		for (unsigned int i = 0; i < _my_instance->chip_no_per_channel; i++) {
 			//The TSU does not check if the chip is idle or not since it is possible to suspend a busy chip and issue a new command
+			//此时通道空闲，可以操作其他的chip
 			_my_instance->process_chip_requests(_my_instance->_NVMController->Get_chip(channelID, _my_instance->Round_robin_turn_of_channel[channelID]));
 			_my_instance->Round_robin_turn_of_channel[channelID] = (flash_chip_ID_type)(_my_instance->Round_robin_turn_of_channel[channelID] + 1) % _my_instance->chip_no_per_channel;
 
@@ -57,7 +58,7 @@ namespace SSD_Components
 			}
 		}
 	}
-	
+	// 如果通道空闲就可以开始
 	void TSU_Base::handle_chip_idle_signal(NVM::FlashMemory::Flash_Chip* chip)
 	{
 		if (_my_instance->_NVMController->Get_channel_status(chip->ChannelID) == BusChannelStatus::IDLE) {
@@ -69,8 +70,10 @@ namespace SSD_Components
 	{
 	}
 
+
+	// 之前已经判断过了 只有通道空闲才会到这
 	bool TSU_Base::issue_command_to_chip(Flash_Transaction_Queue *sourceQueue1, Flash_Transaction_Queue *sourceQueue2, Transaction_Type transactionType, bool suspensionRequired)
-	{
+	{	
 		flash_die_ID_type dieID = sourceQueue1->front()->Address.DieID;
 		flash_page_ID_type pageID = sourceQueue1->front()->Address.PageID;
 		unsigned int planeVector = 0;
@@ -120,7 +123,7 @@ namespace SSD_Components
 					it++;
 				}
 			}
-			// 只要大于0就开始发送
+			// 
 			if (transaction_dispatch_slots.size() > 0)
 			{
 

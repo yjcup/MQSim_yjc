@@ -118,7 +118,9 @@ namespace MQSimEngine
 	Sim_Event* Engine::Register_sim_event(sim_time_type fireTime, Sim_Object* targetObject, void* parameters, int type)
 	{
 		Sim_Event* ev = new Sim_Event(fireTime, targetObject, parameters, type);
-		DEBUG("RegisterEvent " << fireTime << " " << targetObject)
+		// DEBUG("RegisterEvent " << fireTime << " " << targetObject)
+		DEBUG("RegisterEvent " << fireTime << " " << targetObject << " " << targetObject)
+
 		_EventList->Insert_sim_event(ev);
 		return ev;
 	}

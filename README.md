@@ -97,10 +97,55 @@ SSD特性：
       			Simulator->Register_sim_event(Simulator->Time() + suspendTime + target_channel->ProgramCommandTime[transaction_list.size()] + data_transfer_time,
       							this, dieBKE, (int)NVDDR2_SimEventType::PROGRAM_CMD_ADDR_DATA_TRANSFERRED);
       ```
+#### 一个写请求的处理过程
 
-      
+1. 应用将请求发送到主机端队列，并通过PCIe总线通知ssd
+2. ssd更新队列请求主机命令
+3. 主机端读取命令在将命令传递回去
+4. ssd开始处理请求
+5. ftl翻译，缓存未命中去取
 
-   5. 
+```shell
+******************************
+Executing scenario 1 out of 1 .......
+Investigating input trace file: ./test.trace
+Trace file: ./test.trace seems healthy
+RegisterEvent 946244000 0x5555786ca9a0  //Submit_io_request(request); 发送请求
+
+RegisterEvent 946244008 0x5555786ca2f0 //device更新队列
+RegisterEvent 946244016 0x5555786ca2f0 //抓取请求
+RegisterEvent 946244041 0x5555786ca2f0 // 读取请求发送到主机侧并开始执行请求
+Address mapping table query - Stream ID:0, LPA:22863473, MISS 
+0: 946244041 Issueing Transaction - Type:Read, , PPA:45613442, LPA:18446744073709551615, Channel: 5, Chip: 1
+Chip 5, 1, 1: Sending read command to chip for LPA: 18446744073709551615
+RegisterEvent 946244331 0x55557646c490
+RegisterEvent 946319351 0x55556af98f70
+Command execution started on channel: 5 chip: 1
+Channel 5 Chip 1- Finished executing read command
+Chip 5, 1: finished  read command
+RegisterEvent 946320887 0x55557646c490
+Address mapping table insert entry - Stream ID:0, LPA:22863473, PPA:18446744073709551615
+Address mapping table update entry - Stream ID:0, LPA:22863473, PPA:14155776
+1: 946320887 Issueing Transaction - Type:Read, , PPA:14155776, LPA:22863473, Channel: 1, Chip: 2
+// 之前缓存未命中不管 
+Chip 1, 2, 1: Sending read command to chip for LPA: 22863473
+RegisterEvent 946321177 0x55557646c490
+RegisterEvent 946396197 0x55555b9045f0
+Command execution started on channel: 1 chip: 2
+Channel 1 Chip 2- Finished executing read command
+Chip 1, 2: finished  read command
+RegisterEvent 946397733 0x55557646c490
+** Host Interface: Request #0 from stream #0 is finished
+// 请求过来了显示处理cache相关，之后在将读取的数据发送到nvme中
+RegisterEvent 946397889 0x5555786ca2f0
+RegisterEvent 946397900 0x5555786ca2f0
+[====================]  100% progress in Host.IO_Flow.Trace../test.trace
+
+RegisterEvent 946397908 0x5555786ca2f0
+MQSim finished at Mon Nov 25 07:46:47 2024
+
+Total simulation time: 0:3:42
+```
 
    
 

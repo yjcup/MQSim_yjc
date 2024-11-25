@@ -141,6 +141,9 @@ void TSU_OutOfOrder::Report_results_in_XML(std::string name_prefix, Utils::XmlWr
 	xmlwriter.Write_close_tag();
 }
 
+
+// 全局的调度方法，请求过来
+//每个请求完成之后都会执行检查该通道是否idle，他会继续遍历其他chip
 void TSU_OutOfOrder::Schedule()
 {
 	opened_scheduling_reqs--;
@@ -210,7 +213,7 @@ void TSU_OutOfOrder::Schedule()
 	// 遍历每套通道
 	for (flash_channel_ID_type channelID = 0; channelID < channel_count; channelID++)
 	{	
-		// 如果通道空闲，
+		//  
 		if (_NVMController->Get_channel_status(channelID) == BusChannelStatus::IDLE)
 		{	
 			//  这个读写队列不是放到chip上的，是放到对应实现队列上的
@@ -222,7 +225,7 @@ void TSU_OutOfOrder::Schedule()
 				NVM::FlashMemory::Flash_Chip *chip = _NVMController->Get_chip(channelID, Round_robin_turn_of_channel[channelID]);
 				//The TSU does not check if the chip is idle or not since it is possible to suspend a busy chip and issue a new command
 				
-				process_chip_requests(chip);
+ 				process_chip_requests(chip);
 				Round_robin_turn_of_channel[channelID] = (flash_chip_ID_type)(Round_robin_turn_of_channel[channelID] + 1) % chip_no_per_channel;
 				if (_NVMController->Get_channel_status(chip->ChannelID) != BusChannelStatus::IDLE)
 				{
