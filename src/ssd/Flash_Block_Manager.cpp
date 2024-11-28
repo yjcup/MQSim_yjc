@@ -24,6 +24,7 @@ namespace SSD_Components
 		plane_record->Free_pages_count--;		
 		page_address.BlockID = plane_record->Data_wf[stream_id]->BlockID;
 		page_address.PageID = plane_record->Data_wf[stream_id]->Current_page_write_index++;
+		//管理元数据
 		program_transaction_issued(page_address);
 
 		//The current write frontier block is written to the end

@@ -38,7 +38,8 @@ namespace SSD_Components
 		Sim_Object::Setup_triggers();
 		flash_controller->ConnectToTransactionServicedSignal(handle_transaction_serviced_signal_from_PHY);
 	}
-
+	// 这个方法的调用
+	// 
 	void GC_and_WL_Unit_Base::handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction)
 	{
 		PlaneBookKeepingType* pbke = &(_my_instance->block_manager->plane_manager[transaction->Address.ChannelID][transaction->Address.ChipID][transaction->Address.DieID][transaction->Address.PlaneID]);
@@ -49,6 +50,7 @@ namespace SSD_Components
 			case Transaction_Source_Type::CACHE:
 				switch (transaction->Type)
 				{
+					// 修改元数据
 					case Transaction_Type::READ:
 						_my_instance->block_manager->Read_transaction_serviced(transaction->Address);
 						break;

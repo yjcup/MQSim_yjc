@@ -155,7 +155,7 @@ namespace SSD_Components
 
 		void Consume_pcie_message(Host_Components::PCIe_Message* message)
 		{
-			//如果读完成
+			//如果内存读取完成 要么是读取命令，要么是读取要写的数据
 			if (message->Type == Host_Components::PCIe_Message_Type::READ_COMP) {
 				request_fetch_unit->Process_pcie_read_message(message->Address, message->Payload, message->Payload_size);
 			} else {

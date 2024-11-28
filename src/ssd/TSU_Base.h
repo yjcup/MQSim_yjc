@@ -93,6 +93,8 @@ protected:
 	int opened_scheduling_reqs;
 	void process_chip_requests(NVM::FlashMemory::Flash_Chip* chip)
 	{
+
+		// 这里设置优先级 先看有没有合适的读请求，之后是写请求 再是擦除请求
 		if (!_my_instance->service_read_transaction(chip)) {
 			if (!_my_instance->service_write_transaction(chip)) {
 				_my_instance->service_erase_transaction(chip);

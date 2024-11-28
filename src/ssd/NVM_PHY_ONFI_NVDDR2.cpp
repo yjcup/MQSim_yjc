@@ -408,7 +408,7 @@ namespace SSD_Components {
 				}
 				break;
 			case NVDDR2_SimEventType::READ_DATA_TRANSFERRED:
-				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID << ": READ_DATA_TRANSFERRED ")
+				DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID << ": READ_DATA_TRANSFERRED ")
 				targetChip->EndDataOutXfer(dieBKE->ActiveCommand);
 				copy_read_data_to_transaction((NVM_Transaction_Flash_RD*)dieBKE->ActiveTransfer, dieBKE->ActiveCommand);
 	#if 0

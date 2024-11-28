@@ -219,6 +219,8 @@ void TSU_OutOfOrder::Schedule()
 			//  这个读写队列不是放到chip上的，是放到对应实现队列上的
 			// 再遍历每一个chip
 			// 这里i只是次数，真正控制位置的是轮询指针
+
+			// 已chip为单位，先到先服务
 			for (unsigned int i = 0; i < chip_no_per_channel; i++)
 			{
 				// 使用轮询的方式可以非常方便从上一次由于繁忙而导致退出循环的地方开始
@@ -308,7 +310,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 			return false;
 		}
 	}
-
+	// 上面是设置一系列的优先级，如果有优先的他就不能执行
 	bool suspensionRequired = false;
 	ChipStatus cs = _NVMController->GetChipStatus(chip);
 	switch (cs)

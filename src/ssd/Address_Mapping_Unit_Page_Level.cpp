@@ -586,6 +586,7 @@ namespace SSD_Components
 	*/
 	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction)
 	{
+		// 得到ppa
 		PPA_type ppa = domains[streamID]->Get_ppa(ideal_mapping_table, streamID, transaction->LPA);
 
 		if (transaction->Type == Transaction_Type::READ) {
@@ -599,7 +600,8 @@ namespace SSD_Components
 			
 			return true;
 		} else {//This is a write transaction
-			// 这点他到底是怎么分配的
+			// 只有写操作会触发gc
+			// 先根据逻辑地址给他分配新的地址
 			allocate_plane_for_user_write((NVM_Transaction_Flash_WR*)transaction);
 			//there are too few free pages remaining only for GC
 			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(transaction->Address)){
@@ -1149,6 +1151,7 @@ namespace SSD_Components
 
 	void Address_Mapping_Unit_Page_Level::allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc)
 	{
+		//翻译地址：缓存中没有去取，取完之后，之后有两种可能，一种是ssd中这种地址第一次访问，没有改地址，要么就是之前有地址 
 		AddressMappingDomain* domain = domains[transaction->Stream_id];
 		PPA_type old_ppa = domain->Get_ppa(ideal_mapping_table, transaction->Stream_id, transaction->LPA);
 
@@ -1720,6 +1723,7 @@ namespace SSD_Components
 							if (_my_instance->is_lpa_locked_for_gc(transaction->Stream_id, lpa)) {
 								_my_instance->manage_user_transaction_facing_barrier(it2->second);
 							} else {
+								//翻译地址的同时也进行了资源的非配
 								if (_my_instance->translate_lpa_to_ppa(transaction->Stream_id, it2->second)) {
 									_my_instance->ftl->TSU->Submit_transaction(it2->second);
 									if (((NVM_Transaction_Flash_WR*)it2->second)->RelatedRead != NULL) {
