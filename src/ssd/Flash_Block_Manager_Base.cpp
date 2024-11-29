@@ -20,6 +20,8 @@ namespace SSD_Components
 					plane_manager[channelID][chipID][dieID] = new PlaneBookKeepingType[plane_no_per_die];
 
 					//Initialize plane book keeping data structure
+
+					//管理plane元数据
 					for (unsigned int planeID = 0; planeID < plane_no_per_die; planeID++) {
 						plane_manager[channelID][chipID][dieID][planeID].Total_pages_count = block_no_per_plane * pages_no_per_block;
 						plane_manager[channelID][chipID][dieID][planeID].Free_pages_count = block_no_per_plane * pages_no_per_block;

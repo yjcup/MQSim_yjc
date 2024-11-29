@@ -42,6 +42,8 @@ namespace SSD_Components
 
 	void GC_and_WL_Unit_Page_Level::Check_gc_required(const unsigned int free_block_pool_size, const NVM::FlashMemory::Physical_Page_Address& plane_address)
 	{
+
+		// 对于不同的policy来说 只有这个区别吗？
 		if (free_block_pool_size < block_pool_gc_threshold) {
 			flash_block_ID_type gc_candidate_block_id = block_manager->Get_coldest_block_id(plane_address);
 			PlaneBookKeepingType* pbke = block_manager->Get_plane_bookkeeping_entry(plane_address);

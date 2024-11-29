@@ -60,8 +60,12 @@ namespace SSD_Components
 					default:
 						PRINT_ERROR("Unexpected situation in the GC_and_WL_Unit_Base function!")
 				}
+				// 
 				if (_my_instance->block_manager->Block_has_ongoing_gc_wl(transaction->Address)) {
+					// 队列中要没有待执行的任务了
 					if (_my_instance->block_manager->Can_execute_gc_wl(transaction->Address)) {
+
+						// 选取候选地址
 						NVM::FlashMemory::Physical_Page_Address gc_wl_candidate_address(transaction->Address);
 						Block_Pool_Slot_Type* block = &pbke->Blocks[transaction->Address.BlockID];
 						Stats::Total_gc_executions++;
@@ -71,18 +75,25 @@ namespace SSD_Components
 						//If there are some valid pages in block, then prepare flash transactions for page movement
 						if (block->Current_page_write_index - block->Invalid_page_count > 0) {
 							//address_mapping_unit->Lock_physical_block_for_gc(gc_candidate_address);//Lock the block, so no user request can intervene while the GC is progressing
+							
 							NVM_Transaction_Flash_RD* gc_wl_read = NULL;
 							NVM_Transaction_Flash_WR* gc_wl_write = NULL;
 							for (flash_page_ID_type pageID = 0; pageID < block->Current_page_write_index; pageID++) {
+								// 如果页面有效
 								if (_my_instance->block_manager->Is_page_valid(block, pageID)) {
 									Stats::Total_page_movements_for_gc++;
 									gc_wl_candidate_address.PageID = pageID;
+									// 看ssd是否使用copyback特性
+									// 正常就是先讲old_page的有效数据读出放入缓冲区，之后在写入
+									// 有copyback就可以用ssd的内部特性 快一点
 									if (_my_instance->use_copyback) {
+										// 这边只有写操作
 										gc_wl_write = new NVM_Transaction_Flash_WR(Transaction_Source_Type::GC_WL, block->Stream_id, _my_instance->sector_no_per_page * SECTOR_SIZE_IN_BYTE,
 											NO_LPA, _my_instance->address_mapping_unit->Convert_address_to_ppa(gc_wl_candidate_address), NULL, 0, NULL, 0, INVALID_TIME_STAMP);
 										gc_wl_write->ExecutionMode = WriteExecutionModeType::COPYBACK;
 										_my_instance->tsu->Submit_transaction(gc_wl_write);
 									} else {
+										// 这里要先读在写 
 										gc_wl_read = new NVM_Transaction_Flash_RD(Transaction_Source_Type::GC_WL, block->Stream_id, _my_instance->sector_no_per_page * SECTOR_SIZE_IN_BYTE,
 											NO_LPA, _my_instance->address_mapping_unit->Convert_address_to_ppa(gc_wl_candidate_address), gc_wl_candidate_address, NULL, 0, NULL, 0, INVALID_TIME_STAMP);
 										gc_wl_write = new NVM_Transaction_Flash_WR(Transaction_Source_Type::GC_WL, block->Stream_id, _my_instance->sector_no_per_page * SECTOR_SIZE_IN_BYTE,

@@ -30,14 +30,18 @@ namespace SSD_Components
 	{
 	public:
 		flash_block_ID_type BlockID;
+		// 就是当前写入页的数量
 		flash_page_ID_type Current_page_write_index;
 		Block_Service_Status Current_status;
 		unsigned int Invalid_page_count;
 		unsigned int Erase_count;
+		// 块中包含页的数量
 		static unsigned int Page_vector_size;
 		uint64_t* Invalid_page_bitmap;//A bit sequence that keeps track of valid/invalid status of pages in the block. A "0" means valid, and a "1" means invalid.
 		stream_id_type Stream_id = NO_STREAM;
+		//该块是否用来保存映射数据
 		bool Holds_mapping_data = false;
+		//是否再进行gc_wl操作
 		bool Has_ongoing_gc_wl = false;
 		NVM_Transaction_Flash_ER* Erase_transaction;
 		bool Hot_block = false;//Used for hot/cold separation mentioned in the "On the necessity of hot and cold data identification to reduce the write amplification in flash-based SSDs", Perf. Eval., 2014.
