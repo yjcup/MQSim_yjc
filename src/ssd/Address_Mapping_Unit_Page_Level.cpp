@@ -409,6 +409,7 @@ namespace SSD_Components
 
 	void Address_Mapping_Unit_Page_Level::Start_simulation()
 	{
+		// 初始化ssd
 		Store_mapping_table_on_flash_at_start();
 	}
 

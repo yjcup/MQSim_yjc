@@ -21,7 +21,7 @@ endef
 
 .PHONY: all checkdirs clean run
 
-all: checkdirs MQSim run
+all: checkdirs MQSim 
 
 run:
 	./MQSim -i ./ssdconfig_debug.xml -w ./workload_debug.xml
