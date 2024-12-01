@@ -37,7 +37,7 @@ Host_System::Host_System(Host_Parameter_Set* parameters, bool preconditioning_re
 		uint16_t nvme_sq_size = 0, nvme_cq_size = 0;
 		switch (((SSD_Components::Host_Interface_NVMe*)ssd_host_interface)->GetType()) {
 			case HostInterface_Types::NVME:
-				nvme_sq_size = ((SSD_Components::Host_Interface_NVMe*)ssd_host_interface)->Get_submission_queue_depth();
+ 				nvme_sq_size = ((SSD_Components::Host_Interface_NVMe*)ssd_host_interface)->Get_submission_queue_depth();
 				nvme_cq_size = ((SSD_Components::Host_Interface_NVMe*)ssd_host_interface)->Get_completion_queue_depth();
 				break;
 			default:

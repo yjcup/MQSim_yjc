@@ -19,9 +19,12 @@ $1/%.o: %.cpp
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c $$< -o $$@
 endef
 
-.PHONY: all checkdirs clean
+.PHONY: all checkdirs clean run
 
-all: checkdirs MQSim
+all: checkdirs MQSim run
+
+run:
+	./MQSim -i ./ssdconfig_debug.xml -w ./workload_debug.xml
 
 MQSim: $(OBJ)
 	$(LD) $^ -o $@

@@ -30,6 +30,7 @@ namespace SSD_Components
 			page_status_type write_sectors_bitmap, data_timestamp_type data_timestamp);
 		NVM::memory_content_type Content; //The content of this transaction
 		NVM_Transaction_Flash_RD* RelatedRead; //If this write request must be preceded by a read (for partial page write), this variable is used to point to the corresponding read request
+		// 这个没看懂
 		NVM_Transaction_Flash_ER* RelatedErase;
 		page_status_type write_sectors_bitmap;
 		data_timestamp_type DataTimeStamp;

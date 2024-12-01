@@ -45,7 +45,7 @@ Host_IO_Request *IO_Flow_Trace_Based::Generate_next_request()
 
 	char *pEnd;
 	request->LBA_count = std::strtoul(current_trace_line[ASCIITraceSizeColumn].c_str(), &pEnd, 0);
-
+	//保证请求的request落在固定的区间
 	request->Start_LBA = std::strtoull(current_trace_line[ASCIITraceAddressColumn].c_str(), &pEnd, 0);
 	if (request->Start_LBA <= (end_lsa_on_device - start_lsa_on_device))
 	{
@@ -172,6 +172,7 @@ void IO_Flow_Trace_Based::Get_statistics(Utils::Workload_Statistics &stats, LPA_
 	stats.Stream_id = io_queue_id - 1; //In MQSim, there is a simple relation between stream id and the io_queue_id of NVMe
 	stats.Min_LHA = start_lsa_on_device;
 	stats.Max_LHA = end_lsa_on_device;
+	
 	for (int i = 0; i < MAX_ARRIVAL_TIME_HISTOGRAM + 1; i++)
 	{
 		stats.Write_arrival_time.push_back(0);

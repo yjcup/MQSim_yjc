@@ -60,8 +60,8 @@ namespace Utils
 		Logical_Address_Partitioning_Unit::chip_no_per_channel = chip_no_per_channel;
 		Logical_Address_Partitioning_Unit::die_no_per_chip = die_no_per_chip;
 		Logical_Address_Partitioning_Unit::plane_no_per_die = plane_no_per_die;
-
-		resource_list = new int***[channel_count];
+		//初始化 resources_list channel chip die plane
+ 		resource_list = new int***[channel_count];
 		bool resource_sharing = false;
 		for (flash_channel_ID_type channel_id = 0; channel_id < channel_count; channel_id++) {
 			resource_list[channel_id] = new int**[chip_no_per_channel];
@@ -97,10 +97,12 @@ namespace Utils
 							if (!(stream_plane_ids[stream_id][plane_id] < plane_no_per_die)) {
 								PRINT_ERROR("Invalid plane ID specified for I/O flow " << stream_id);
 							}
+
+							//标记使用情况
 							resource_list[stream_channel_ids[stream_id][channel_id]][stream_chip_ids[stream_id][chip_id]][stream_die_ids[stream_id][die_id]][stream_plane_ids[stream_id][plane_id]]++;
 						}
 					}
-				}
+				}			
 			}
 		}
 
@@ -138,6 +140,7 @@ namespace Utils
 				for (flash_chip_ID_type chip_id = 0; chip_id < stream_chip_ids[stream_id].size(); chip_id++) {
 					for (flash_die_ID_type die_id = 0; die_id < stream_die_ids[stream_id].size(); die_id++) {
 						for (flash_plane_ID_type plane_id = 0; plane_id < stream_plane_ids[stream_id].size(); plane_id++) {
+							//resourse_list中存储是所有流的份额 
 							lsa_count += (LHA_type)((block_no_per_plane * page_no_per_block * sector_no_per_page * (1.0 - overprovisioning_ratio) *
 								1.0 / double(resource_list[stream_channel_ids[stream_id][channel_id]][stream_chip_ids[stream_id][chip_id]][stream_die_ids[stream_id][die_id]][stream_plane_ids[stream_id][plane_id]])));
 						}

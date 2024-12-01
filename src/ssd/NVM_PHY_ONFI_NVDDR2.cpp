@@ -356,7 +356,7 @@ namespace SSD_Components {
 			case NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED:
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID << ": READ_CMD_ADDR_TRANSFERRED ")
 				// 
-				//执行命令
+				//注册执行命令
 				targetChip->EndCMDXfer(dieBKE->ActiveCommand);
 				for (auto tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
@@ -366,6 +366,7 @@ namespace SSD_Components {
 				chipBKE->No_of_active_dies++;
 				if (chipBKE->OngoingDieCMDTransfers.size() > 0) {
 					// 执行内部并行的操作，当发现还有其他的die在进行命令传输的时候，可以并行执行，提升执行速度
+					//没看懂 此时总线空闲 开始利用总线进行传输
 					perform_interleaved_cmd_data_transfer(targetChip, chipBKE->OngoingDieCMDTransfers.front());
 					return;
 				} else {
@@ -653,6 +654,8 @@ namespace SSD_Components {
 		channels[tr->Address.ChannelID]->SetStatus(BusChannelStatus::BUSY, channels[tr->Address.ChannelID]->Chips[tr->Address.ChipID]);
 	}
 
+
+    // interleave高级命令 
 	void NVM_PHY_ONFI_NVDDR2::perform_interleaved_cmd_data_transfer(NVM::FlashMemory::Flash_Chip* chip, DieBookKeepingEntry* bookKeepingEntry)
 	{
 		ONFI_Channel_NVDDR2* target_channel = channels[bookKeepingEntry->ActiveTransactions.front()->Address.ChannelID];
