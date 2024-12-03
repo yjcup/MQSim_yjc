@@ -75,7 +75,6 @@ namespace Utils
 				}
 			}
 		}
-
 		for (unsigned int stream_id = 0; stream_id < concurrent_stream_no; stream_id++)
 		{
 			for (flash_channel_ID_type channel_id = 0; channel_id < stream_channel_ids[stream_id].size(); channel_id++) {
@@ -147,10 +146,11 @@ namespace Utils
 					}
 				}
 			}
-			pdas_per_flow.push_back(LHA_type(double(lsa_count) / (1.0 - overprovisioning_ratio)));
-			total_pda_no += pdas_per_flow[stream_id];
+			pdas_per_flow.push_back(LHA_type(double(lsa_count) / (1.0 - overprovisioning_ratio)));			total_pda_no += pdas_per_flow[stream_id];
 			lsa_count_per_stream.push_back(lsa_count);
 		}
+		//为什么需要将不同flow分隔开呢，我觉得是可以将不同的应用分割开
+		// 不同的流（就是不同的应用）不可能去访问两个相同的地址
 
 		total_lha_no = 0;
 		for (unsigned int stream_id = 0; stream_id < concurrent_stream_no; stream_id++) {

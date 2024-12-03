@@ -423,6 +423,7 @@ namespace SSD_Components
 
 	void Address_Mapping_Unit_Page_Level::Store_mapping_table_on_flash_at_start()
 	{
+		//检查缓存是否在flash中
 		if (mapping_table_stored_on_flash) {
 			return;
 		}
@@ -432,6 +433,7 @@ namespace SSD_Components
 
 		for (unsigned int stream_id = 0; stream_id < no_of_input_streams; stream_id++) {
 			dummy_tr->Stream_id = stream_id;
+			
 			for (MVPN_type translation_page_id = 0; translation_page_id < domains[stream_id]->Total_translation_pages_no; translation_page_id++) {
 				dummy_tr->LPA = (LPA_type)translation_page_id;
 				allocate_plane_for_translation_write(dummy_tr);
@@ -495,6 +497,7 @@ namespace SSD_Components
 			ftl->TSU->Prepare_for_transaction_submit();
 			for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 				it != transactionList.end(); it++) {
+					//如果逻辑地址没有翻译就直接跳过
 				if (((NVM_Transaction_Flash*)(*it))->Physical_address_determined) {
 					// 提交事务
 					ftl->TSU->Submit_transaction(static_cast<NVM_Transaction_Flash*>(*it));
@@ -592,6 +595,8 @@ namespace SSD_Components
 
 		if (transaction->Type == Transaction_Type::READ) {
 			if (ppa == NO_PPA) {
+				//如果是18446744073709551615这个书的话就是noppa
+				//这个应该就是初始化的 时候给创建一个 根据逻辑地址创建一个读的地址 
 				ppa = online_create_entry_for_reads(transaction->LPA, streamID, transaction->Address, ((NVM_Transaction_Flash_RD*)transaction)->read_sectors_bitmap);
 			}
 			transaction->PPA = ppa;
@@ -1001,7 +1006,8 @@ namespace SSD_Components
 		switch (domain->PlaneAllocationScheme) {
 			case Flash_Plane_Allocation_Scheme_Type::CWDP:
 			// 逐级平分 channel-->chip-->die-->plane
-			//  
+			// 那边为什么要这么做
+			//好像能解释通了
 				targetAddress.ChannelID = domain->Channel_ids[(unsigned int)(lpn % domain->Channel_no)];//平分到channel
 				//可以看作chip1有8个 chip2 有8 个 chip 3 有8 个
 				targetAddress.ChipID = domain->Chip_ids[(unsigned int)((lpn / domain->Channel_no) % domain->Chip_no)];//平分
@@ -1451,6 +1457,8 @@ namespace SSD_Components
 
 	inline void Address_Mapping_Unit_Page_Level::Convert_ppa_to_address(const PPA_type ppn, NVM::FlashMemory::Physical_Page_Address& address)
 	{
+
+	
 		address.ChannelID = (flash_channel_ID_type)(ppn / page_no_per_channel);
 		address.ChipID = (flash_chip_ID_type)((ppn % page_no_per_channel) / page_no_per_chip);
 		address.DieID = (flash_die_ID_type)(((ppn % page_no_per_channel) % page_no_per_chip) / page_no_per_die);
@@ -1578,6 +1586,7 @@ namespace SSD_Components
 			}
 		}
 		domain->CMT->Reserve_slot_for_lpn(stream_id, lpa);
+		//向ssd请求映射数据来转换地址
 		generate_flash_read_request_for_mapping_data(stream_id, lpa);//consult GTD and create read transaction
 		
 		return false;
@@ -1663,6 +1672,7 @@ namespace SSD_Components
 
 			NVM_Transaction_Flash_RD* readTR = new NVM_Transaction_Flash_RD(Transaction_Source_Type::MAPPING, stream_id,
 					SECTOR_SIZE_IN_BYTE, NO_LPA, NO_PPA, NULL, mvpn, ((page_status_type)0x1) << sector_no_per_page, CurrentTimeStamp);
+			//将物理地址转换为对应的channel
 			Convert_ppa_to_address(ppn, readTR->Address);
 			block_manager->Read_transaction_issued(readTR->Address);//Inform block_manager as soon as the transaction's target address is determined
 			readTR->PPA = ppn;

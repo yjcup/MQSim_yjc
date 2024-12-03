@@ -4,7 +4,7 @@
 		<IO_Flow_Parameter_Set_Trace_Based>
 			<Priority_Class>HIGH</Priority_Class>
 			<Device_Level_Data_Caching_Mode>WRITE_CACHE</Device_Level_Data_Caching_Mode>
-			<Channel_IDs>0,1,2,3</Channel_IDs>
+			<Channel_IDs>1,2,3</Channel_IDs>
 			<Chip_IDs>0,1,2,3</Chip_IDs>
 			<Die_IDs>0,1</Die_IDs>
 			<Plane_IDs>0,1</Plane_IDs>
@@ -14,7 +14,7 @@
 			<Relay_Count>1</Relay_Count>
 			<Time_Unit>PICOSECOND</Time_Unit>
 		</IO_Flow_Parameter_Set_Trace_Based> 
-		<IO_Flow_Parameter_Set_Trace_Based>
+		<!-- <IO_Flow_Parameter_Set_Trace_Based>
 			<Priority_Class>HIGH</Priority_Class>
 			<Device_Level_Data_Caching_Mode>WRITE_CACHE</Device_Level_Data_Caching_Mode>
 			<Channel_IDs>0,1,2,3</Channel_IDs>
@@ -26,7 +26,7 @@
 			<Percentage_To_Be_Executed>100</Percentage_To_Be_Executed>
 			<Relay_Count>1</Relay_Count>
 			<Time_Unit>PICOSECOND</Time_Unit>
-		</IO_Flow_Parameter_Set_Trace_Based> 
+		</IO_Flow_Parameter_Set_Trace_Based>  -->
 	</IO_Scenario>
 
 </MQSim_IO_Scenarios>

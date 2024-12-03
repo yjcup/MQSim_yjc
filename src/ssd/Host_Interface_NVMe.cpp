@@ -171,6 +171,7 @@ inline void Input_Stream_Manager_NVMe::inform_host_request_completed(stream_id_t
 
 void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 {
+	//切分就是
 	LHA_type lsa = user_request->Start_LBA; // 起始地址+长度
 	LHA_type lsa2 = user_request->Start_LBA;
 	unsigned int req_size = user_request->SizeInSectors; //扇区数量

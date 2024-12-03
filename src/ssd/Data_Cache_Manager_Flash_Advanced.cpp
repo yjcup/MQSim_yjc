@@ -203,6 +203,7 @@ namespace SSD_Components
 					std::list<NVM_Transaction*>::iterator it = user_request->Transaction_list.begin();
 					while (it != user_request->Transaction_list.end()) {
 						NVM_Transaction_Flash_RD* tr = (NVM_Transaction_Flash_RD*)(*it);
+						//cache中是否存在mapping
 						if (per_stream_cache[tr->Stream_id]->Exists(tr->Stream_id, tr->LPA)) {
 							page_status_type available_sectors_bitmap = per_stream_cache[tr->Stream_id]->Get_slot(tr->Stream_id, tr->LPA).State_bitmap_of_existing_sectors & tr->read_sectors_bitmap;
 							if (available_sectors_bitmap == tr->read_sectors_bitmap) {
@@ -220,7 +221,7 @@ namespace SSD_Components
 							it++;
 						}
 					}
-
+					// 这一块是缓存相关的操作先不管
 					if (user_request->Sectors_serviced_from_cache > 0) {
 						Memory_Transfer_Info* transfer_info = new Memory_Transfer_Info;
 						transfer_info->Size_in_bytes = user_request->Sectors_serviced_from_cache * SECTOR_SIZE_IN_BYTE;
@@ -229,6 +230,7 @@ namespace SSD_Components
 						transfer_info->Stream_id = user_request->Stream_id;
 						service_dram_access_request(transfer_info);
 					}
+					// 这边是缓存未命中的操作 read op可以直接来看这里
 					if (user_request->Transaction_list.size() > 0) {
 						static_cast<FTL*>(nvm_firmware)->Address_Mapping_Unit->Translate_lpa_to_ppa_and_dispatch(user_request->Transaction_list);
 					}

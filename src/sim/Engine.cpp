@@ -74,7 +74,12 @@ namespace MQSimEngine
 		for (std::unordered_map<sim_object_id_type, Sim_Object*>::iterator obj = _ObjectList.begin();
 			obj != _ObjectList.end();
 			++obj) {
+			// pcielink hostinterface tsu phy all chips datacache ftl ssd_device
 			obj->second->Start_simulation();
+
+			//host创建流
+			//adressmapping unit 映射初始化
+			// io_flow_trace
 		}
 		
 		Sim_Event* ev = NULL;
@@ -119,7 +124,7 @@ namespace MQSimEngine
 	{
 		Sim_Event* ev = new Sim_Event(fireTime, targetObject, parameters, type);
 		// DEBUG("RegisterEvent " << fireTime << " " << targetObject)
-		DEBUG("RegisterEvent " << fireTime << " " << targetObject << " " << targetObject)
+		DEBUG("RegisterEvent " << fireTime << " " << targetObject)
 
 		_EventList->Insert_sim_event(ev);
 		return ev;

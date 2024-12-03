@@ -47,6 +47,7 @@
 		<Chip_No_Per_Channel>4</Chip_No_Per_Channel>
 		<Flash_Comm_Protocol>NVDDR2</Flash_Comm_Protocol>
 		<Flash_Parameter_Set>
+		<!-- 这里我的理解就是如果使用qlc颗粒的 那么一个page的存储容量是不会变的，只是cell的数量变少了 -->
 			<Flash_Technology>MLC</Flash_Technology>
 			<CMD_Suspension_Support>ERASE</CMD_Suspension_Support>
 			<Page_Read_Latency_LSB>75000</Page_Read_Latency_LSB>
