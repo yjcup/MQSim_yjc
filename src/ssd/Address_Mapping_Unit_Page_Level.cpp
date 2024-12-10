@@ -441,7 +441,7 @@ namespace SSD_Components
 				flash_controller->Change_flash_page_status_for_preconditioning(dummy_tr->Address, dummy_tr->LPA);
 			}
 		}
-		mapping_table_stored_on_flash = true;
+  		mapping_table_stored_on_flash = true;
 	}
 
 	int Address_Mapping_Unit_Page_Level::Bring_to_CMT_for_preconditioning(stream_id_type stream_id, LPA_type lpa)

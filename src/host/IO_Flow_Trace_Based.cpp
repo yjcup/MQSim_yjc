@@ -87,6 +87,7 @@ void IO_Flow_Trace_Based::Start_simulation()
 	PRINT_MESSAGE("Investigating input trace file: " << trace_file_path);
 
 	sim_time_type last_request_arrival_time = 0;
+	//先是逐行检查数据是否有问题
 	while (std::getline(trace_file, trace_line))
 	{
 		Utils::Helper_Functions::Remove_cr(trace_line);
@@ -138,7 +139,7 @@ void IO_Flow_Trace_Based::Execute_simulator_event(MQSimEngine::Sim_Event *)
 	{
 		Submit_io_request(request);
 	}
-
+	// 如果还有请求还没发送，就继续发送 
 	if (STAT_generated_request_count < total_requests_to_be_generated)
 	{
 		std::string trace_line;

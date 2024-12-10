@@ -303,7 +303,8 @@ void Request_Fetch_Unit_NVMe::Process_pcie_read_message(uint64_t address, void *
 		User_Request *new_request = new User_Request;
 		new_request->IO_command_info = payload;
 		new_request->Stream_id = (stream_id_type)((uint64_t)(dma_req_item->object));
-		new_request->Priority_class = ((Input_Stream_Manager_NVMe *)host_interface->input_stream_manager)->Get_priority_class(new_request->Stream_id);		new_request->STAT_InitiationTime = Simulator->Time();
+		new_request->Priority_class = ((Input_Stream_Manager_NVMe *)host_interface->input_stream_manager)->Get_priority_class(new_request->Stream_id);		
+		new_request->STAT_InitiationTime = Simulator->Time();
 		Submission_Queue_Entry *sqe = (Submission_Queue_Entry *)payload;
 		switch (sqe->Opcode)
 		{
