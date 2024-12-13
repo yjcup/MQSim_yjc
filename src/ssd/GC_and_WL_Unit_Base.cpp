@@ -45,6 +45,7 @@ namespace SSD_Components
 		PlaneBookKeepingType* pbke = &(_my_instance->block_manager->plane_manager[transaction->Address.ChannelID][transaction->Address.ChipID][transaction->Address.DieID][transaction->Address.PlaneID]);
 
 		switch (transaction->Source) {
+			// 这里一共有4种类型 
 			case Transaction_Source_Type::USERIO:
 			case Transaction_Source_Type::MAPPING:
 			case Transaction_Source_Type::CACHE:
@@ -60,7 +61,7 @@ namespace SSD_Components
 					default:
 						PRINT_ERROR("Unexpected situation in the GC_and_WL_Unit_Base function!")
 				}
-				// 
+				
 				if (_my_instance->block_manager->Block_has_ongoing_gc_wl(transaction->Address)) {
 					// 队列中要没有待执行的任务了
 					if (_my_instance->block_manager->Can_execute_gc_wl(transaction->Address)) {
@@ -115,6 +116,7 @@ namespace SSD_Components
 				return;
 		}
 
+		// 只有是一个gc类型的trans才会来到这里
 		switch (transaction->Type) {
 			case Transaction_Type::READ:
 			{
@@ -235,6 +237,7 @@ namespace SSD_Components
 	bool GC_and_WL_Unit_Base::is_safe_gc_wl_candidate(const PlaneBookKeepingType* plane_record, const flash_block_ID_type gc_wl_candidate_block_id)
 	{
 		//The block shouldn't be a current write frontier
+		//闪存中最新写入数据的区域或位置。
 		for (unsigned int stream_id = 0; stream_id < address_mapping_unit->Get_no_of_input_streams(); stream_id++) {
 			if ((&plane_record->Blocks[gc_wl_candidate_block_id]) == plane_record->Data_wf[stream_id]
 				|| (&plane_record->Blocks[gc_wl_candidate_block_id]) == plane_record->Translation_wf[stream_id]

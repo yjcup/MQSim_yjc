@@ -45,13 +45,18 @@ namespace SSD_Components
 
 		// 对于不同的policy来说 只有这个区别吗？
 		if (free_block_pool_size < block_pool_gc_threshold) {
+			//寻找该plane中擦除次数最少的 
 			flash_block_ID_type gc_candidate_block_id = block_manager->Get_coldest_block_id(plane_address);
+			// 获取plane的元数据 
 			PlaneBookKeepingType* pbke = block_manager->Get_plane_bookkeeping_entry(plane_address);
 
+
+			//如果正在进行的擦除操作超过限制就放弃
 			if (pbke->Ongoing_erase_operations.size() >= max_ongoing_gc_reqs_per_plane) {
 				return;
 			}
 
+			// 以greedy为例，它会寻找有效页最少的block
 			switch (block_selection_policy) {
 				case SSD_Components::GC_Block_Selection_Policy_Type::GREEDY://Find the set of blocks with maximum number of invalid pages and no free pages
 				{
@@ -137,7 +142,7 @@ namespace SSD_Components
 				return;
 			}
 			
-			NVM::FlashMemory::Physical_Page_Address gc_candidate_address(plane_address);
+			NVM::FlashMemory::Physical_Page_Address gc_candidate_address(plane_address);//
 			gc_candidate_address.BlockID = gc_candidate_block_id;
 			Block_Pool_Slot_Type* block = &pbke->Blocks[gc_candidate_block_id];
 
@@ -159,6 +164,7 @@ namespace SSD_Components
 				NVM_Transaction_Flash_ER* gc_erase_tr = new NVM_Transaction_Flash_ER(Transaction_Source_Type::GC_WL, pbke->Blocks[gc_candidate_block_id].Stream_id, gc_candidate_address);
 				//If there are some valid pages in block, then prepare flash transactions for page movement
 				if (block->Current_page_write_index - block->Invalid_page_count > 0) {
+					// 开始转移数据
 					NVM_Transaction_Flash_RD* gc_read = NULL;
 					NVM_Transaction_Flash_WR* gc_write = NULL;
 					for (flash_page_ID_type pageID = 0; pageID < block->Current_page_write_index; pageID++) {
@@ -176,9 +182,12 @@ namespace SSD_Components
 								gc_write = new NVM_Transaction_Flash_WR(Transaction_Source_Type::GC_WL, block->Stream_id, sector_no_per_page * SECTOR_SIZE_IN_BYTE,
 									NO_LPA, NO_PPA, gc_candidate_address, NULL, 0, gc_read, 0, INVALID_TIME_STAMP);
 								gc_write->ExecutionMode = WriteExecutionModeType::SIMPLE;
+								// 这个related难道是下面注释的意识吗？
 								gc_write->RelatedErase = gc_erase_tr;
 								gc_read->RelatedWrite = gc_write;
-								tsu->Submit_transaction(gc_read);//Only the read transaction would be submitted. The Write transaction is submitted when the read transaction is finished and the LPA of the target page is determined
+								tsu->Submit_transaction(gc_read);
+								//Only the read transaction would be submitted. 
+								//The Write transaction is submitted when the read transaction is finished and the LPA of the target page is determined
 							}
 							gc_erase_tr->Page_movement_activities.push_back(gc_write);
 						}

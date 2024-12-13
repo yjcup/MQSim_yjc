@@ -71,7 +71,8 @@ namespace SSD_Components
 		unsigned int block_pool_gc_threshold;
 		// 
 		static void handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction);
-		bool is_safe_gc_wl_candidate(const PlaneBookKeepingType* pbke, const flash_block_ID_type gc_wl_candidate_block_id);//Checks if block_address is a safe candidate for gc execution, i.e., 1) it is not a write frontier, and 2) there is no ongoing program operation
+		bool is_safe_gc_wl_candidate(const PlaneBookKeepingType* pbke, const flash_block_ID_type gc_wl_candidate_block_id);
+		//Checks if block_address is a safe candidate for gc execution, i.e., 1) it is not a write frontier, and 2) there is no ongoing program operation
 		bool check_static_wl_required(const NVM::FlashMemory::Physical_Page_Address plane_address);
 		void run_static_wearleveling(const NVM::FlashMemory::Physical_Page_Address plane_address);
 		bool use_copyback;
@@ -83,7 +84,11 @@ namespace SSD_Components
 		bool preemptible_gc_enabled;
 		double gc_hard_threshold;
 		unsigned int block_pool_gc_hard_threshold;
-		unsigned int max_ongoing_gc_reqs_per_plane;//This value has two important usages: 1) maximum number of concurrent gc operations per plane, and 2) the value that determines urgent GC execution when there is a shortage of flash blocks. If the block bool size drops below this value, all incomming user writes should be blocked
+		unsigned int max_ongoing_gc_reqs_per_plane;
+		//This value has two important usages: 
+		//1) maximum number of concurrent gc operations per plane, and 
+		//2) the value that determines urgent GC execution when there is a shortage of flash blocks. 
+		//If the block bool size drops below this value, all incomming user writes should be blocked
 
 		//Following variabels are used based on the type of GC block selection policy
 		unsigned int rga_set_size;//The number of random flash blocks that are radnomly selected 

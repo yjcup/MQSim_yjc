@@ -59,7 +59,8 @@ namespace SSD_Components
 		unsigned int Invalid_pages_count;
 		Block_Pool_Slot_Type* Blocks;
 		std::multimap<unsigned int, Block_Pool_Slot_Type*> Free_block_pool;
-		Block_Pool_Slot_Type** Data_wf, ** GC_wf; //The write frontier blocks for data and GC pages. MQSim adopts Double Write Frontier approach for user and GC writes which is shown very advantages in: B. Van Houdt, "On the necessity of hot and cold data identification to reduce the write amplification in flash - based SSDs", Perf. Eval., 2014
+		Block_Pool_Slot_Type** Data_wf, ** GC_wf; //The write frontier blocks for data and GC pages. 
+		//MQSim adopts Double Write Frontier approach for user and GC writes which is shown very advantages in: B. Van Houdt, "On the necessity of hot and cold data identification to reduce the write amplification in flash - based SSDs", Perf. Eval., 2014
 		Block_Pool_Slot_Type** Translation_wf; //The write frontier blocks for translation GC pages
 		std::queue<flash_block_ID_type> Block_usage_history;//A fifo queue that keeps track of flash blocks based on their usage history
 		std::set<flash_block_ID_type> Ongoing_erase_operations;

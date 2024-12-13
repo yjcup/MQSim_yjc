@@ -44,6 +44,7 @@ Host_IO_Request *IO_Flow_Trace_Based::Generate_next_request()
 	}
 
 	char *pEnd;
+	//没有flow都要自己的起始地址 来确保没有flow不会访问到同一个物理地址去
 	request->LBA_count = std::strtoul(current_trace_line[ASCIITraceSizeColumn].c_str(), &pEnd, 0);
 	//保证请求的request落在固定的区间
 	request->Start_LBA = std::strtoull(current_trace_line[ASCIITraceAddressColumn].c_str(), &pEnd, 0);

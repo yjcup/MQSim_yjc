@@ -607,7 +607,7 @@ namespace SSD_Components
 			return true;
 		} else {//This is a write transaction
 			// 只有写操作会触发gc
-			// 先根据逻辑地址给他分配新的地址
+			// 先根据逻辑地址给他分配新的plane address
 			allocate_plane_for_user_write((NVM_Transaction_Flash_WR*)transaction);
 			//there are too few free pages remaining only for GC
 			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(transaction->Address)){
@@ -766,6 +766,7 @@ namespace SSD_Components
 		delete[] assigned_lpas;
 	}
 
+
 	void Address_Mapping_Unit_Page_Level::Allocate_new_page_for_gc(NVM_Transaction_Flash_WR* transaction, bool is_translation_page)
 	{
 		if (is_translation_page) {
@@ -843,7 +844,9 @@ namespace SSD_Components
 	{
 		AddressMappingDomain* domain = domains[stream_id];
 
-		switch (domain->PlaneAllocationScheme) {
+		switch (domain->PlaneAllocationScheme) {                                                                  
+			// 只分配到plane 静态分配 因为并行级别就是到plane
+			// 静态分配就是将lgn平均分配到plane上
 			case Flash_Plane_Allocation_Scheme_Type::CWDP:
 				targetAddress.ChannelID = domain->Channel_ids[(unsigned int)(lpn % domain->Channel_no)];
 				targetAddress.ChipID = domain->Chip_ids[(unsigned int)((lpn / domain->Channel_no) % domain->Chip_no)];
@@ -1161,6 +1164,8 @@ namespace SSD_Components
 		}
 	}
 
+
+	// is_for_gc 就是用来判断新分配的page是否是用于gc的
 	void Address_Mapping_Unit_Page_Level::allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc)
 	{
 		//翻译地址：缓存中没有去取，取完之后，之后有两种可能，一种是ssd中这种地址第一次访问，没有改地址，要么就是之前有地址 
