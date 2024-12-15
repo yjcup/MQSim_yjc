@@ -11,8 +11,9 @@ namespace Utils
 	class XmlWriter {
 	public:
 		bool Open(const std::string);
-		void Close();
-		bool exists(const std::string);
+        bool Open(const std::string strFile, const std::string timeStr);
+        void Close();
+        bool exists(const std::string);
 		void Write_open_tag(const std::string);
 		void Write_close_tag();
 		void Write_start_element_tag(const std::string);

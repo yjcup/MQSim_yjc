@@ -209,6 +209,7 @@ namespace SSD_Components {
 					Simulator->Register_sim_event(Simulator->Time() + suspendTime + target_channel->ReadCommandTime[transaction_list.size()], this,
 						dieBKE, (int)NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED);
 				} else {
+					//最小的就是die并行 使用interleave操作
 					dieBKE->DieInterleavedTime = suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 					chipBKE->Last_transfer_finish_time += suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 				}
@@ -367,6 +368,7 @@ namespace SSD_Components {
 				if (chipBKE->OngoingDieCMDTransfers.size() > 0) {
 					// 执行内部并行的操作，当发现还有其他的die在进行命令传输的时候，可以并行执行，提升执行速度
 					//没看懂 此时总线空闲 开始利用总线进行传输
+					// interleave操作
 					perform_interleaved_cmd_data_transfer(targetChip, chipBKE->OngoingDieCMDTransfers.front());
 					return;
 				} else {

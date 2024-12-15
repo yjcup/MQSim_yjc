@@ -3,3 +3,5 @@ build/
 *scenario*.xml
 /.vscode
 *.sh
+/result
+/analysis

@@ -341,6 +341,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 		return false;
 	}
 	//实际执行读操作 之后遍历空闲通道中开始执行，
+	// 就是选择合适的事务传递过去
 	issue_command_to_chip(sourceQueue1, sourceQueue2, Transaction_Type::READ, suspensionRequired);
 
 	return true;

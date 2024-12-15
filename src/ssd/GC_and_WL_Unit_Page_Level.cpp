@@ -40,6 +40,10 @@ namespace SSD_Components
 		return false;
 	}
 
+
+	// 只有这一个方法
+	//根据传过来的free_block_size和plane_address来判断是否需要gc
+	//如果需要就开始
 	void GC_and_WL_Unit_Page_Level::Check_gc_required(const unsigned int free_block_pool_size, const NVM::FlashMemory::Physical_Page_Address& plane_address)
 	{
 
@@ -152,6 +156,7 @@ namespace SSD_Components
 			}
 			
 			//Run the state machine to protect against race condition
+			// 将该块标记为开始执行gc
 			block_manager->GC_WL_started(gc_candidate_address);
 			pbke->Ongoing_erase_operations.insert(gc_candidate_block_id);
 			address_mapping_unit->Set_barrier_for_accessing_physical_block(gc_candidate_address);//Lock the block, so no user request can intervene while the GC is progressing

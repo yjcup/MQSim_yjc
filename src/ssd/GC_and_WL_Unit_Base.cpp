@@ -61,7 +61,11 @@ namespace SSD_Components
 					default:
 						PRINT_ERROR("Unexpected situation in the GC_and_WL_Unit_Base function!")
 				}
-				
+				// 这里的代码和那边都是一样的
+				// 为什么还需要这里写一次呢？
+				// 要执行gc需要两个条件：1.有效块小于某个阈值2.该快中没有要执行的读写操作了
+				// 如果在checked_gc开始需要gc了，但是有可能块中还有没执行完的读写操作，
+				// 所以有新的读写操作完成的时候要判断一下，如果条件都满足的话，就可以开始执行gc了
 				if (_my_instance->block_manager->Block_has_ongoing_gc_wl(transaction->Address)) {
 					// 队列中要没有待执行的任务了
 					if (_my_instance->block_manager->Can_execute_gc_wl(transaction->Address)) {
@@ -117,6 +121,10 @@ namespace SSD_Components
 		}
 
 		// 只有是一个gc类型的trans才会来到这里
+
+		//gc部分负责处理已经读取的read trans
+		//之前设置的related wirte 我这个读请求完成之后要进行相应的写请求
+		// 就是在这里操作
 		switch (transaction->Type) {
 			case Transaction_Type::READ:
 			{

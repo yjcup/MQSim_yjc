@@ -1,5 +1,6 @@
 #include "XMLWriter.h"
 #include "../sim/Engine.h"
+#include <sys/stat.h>
 
 namespace Utils
 {
@@ -8,9 +9,51 @@ namespace Utils
 		return checkFile.is_open();
 	}
 	
-	bool XmlWriter::Open(const std::string strFile) {
+
+	bool CreateDirectoryIfNeeded(const std::string& dirPath) {
+		// 创建目录，如果目录已存在，则返回 true
+		if (mkdir(dirPath.c_str(), 0777) == 0 || errno == EEXIST) {
+			return true;
+		}
+		return false;
+	}
+
+
+			bool XmlWriter::Open(const std::string strFile) {
 
 		outFile.open(strFile);
+		if (outFile.is_open()) {
+			outFile << "<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n";
+			indent = 0;
+			openTags = 0;
+			openElements = 0;
+
+			return true;
+		}
+
+		return false;
+
+	}
+
+
+	bool XmlWriter::Open(const std::string strFile,const std::string timeStr) {
+      // 获取当前时间作为文件夹名
+    // std::string timeStr = GetCurrentTimeAsString();
+
+    // 基于当前时间构建文件夹路径
+    std::string dirPath = "./result/" + timeStr;  // 使用时间戳创建文件夹路径，路径格式是 ./2024-12-15_14-30-45
+
+    // 创建目录（如果它不存在）
+    if (!CreateDirectoryIfNeeded(dirPath)) {
+        std::cerr << "Error creating directory for time: " << timeStr << std::endl;
+        return false;
+    }
+
+    // 构建完整的文件路径：文件夹路径 + 文件名
+    std::string fullFilePath = dirPath + "/" + strFile;  // 假设 strFile 是文件名
+
+
+		outFile.open(fullFilePath);
 		if (outFile.is_open()) {
 			outFile << "<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n";
 			indent = 0;

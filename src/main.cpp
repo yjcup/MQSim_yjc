@@ -9,7 +9,9 @@
 #include "exec/Host_System.h"
 #include "utils/rapidxml/rapidxml.hpp"
 #include "utils/DistributionTypes.h"
-
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 using namespace std;
 
 
@@ -34,6 +36,19 @@ void command_line_args(char* argv[], string& input_file_path, string& workload_f
 		}
 	}
 }
+
+
+		std::string GetCurrentTimeAsString() {
+			// 获取当前时间，使用系统时钟
+			auto now = std::chrono::system_clock::now();
+			auto time = std::chrono::system_clock::to_time_t(now);
+
+			// 将时间格式化为字符串 (例如：2024-12-15_14-30-45)
+			std::tm tm = *std::localtime(&time);
+			std::ostringstream oss;
+			oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
+			return oss.str();
+		}
 
 void read_configuration_parameters(const string ssd_config_file_path, Execution_Parameter_Set* exec_params)
 {
@@ -228,10 +243,11 @@ std::vector<std::vector<IO_Flow_Parameter_Set*>*>* read_workload_definitions(con
 	return io_scenarios;
 }
 
-void collect_results(SSD_Device& ssd, Host_System& host, const char* output_file_path)
+void collect_results(SSD_Device& ssd, Host_System& host, const char* output_file_path,const std::string currenttime)
 {
 	Utils::XmlWriter xmlwriter;
-	xmlwriter.Open(output_file_path);
+	cout<<output_file_path<<endl;
+	xmlwriter.Open(output_file_path,currenttime);
 
 	std::string tmp("MQSim_Results");
 	xmlwriter.Write_open_tag(tmp);
@@ -268,6 +284,9 @@ int main(int argc, char* argv[])
 	// 解析参数
 	command_line_args(argv, ssd_config_file_path, workload_defs_file_path);
 
+	// 获取当前时间用户创建文件夹
+	std::string timeStr = GetCurrentTimeAsString();
+
 	Execution_Parameter_Set* exec_params = new Execution_Parameter_Set;
 	read_configuration_parameters(ssd_config_file_path, exec_params);
 	std::vector<std::vector<IO_Flow_Parameter_Set*>*>* io_scenarios = read_workload_definitions(workload_defs_file_path);
@@ -303,7 +322,7 @@ int main(int argc, char* argv[])
 		PRINT_MESSAGE("");
 
 		PRINT_MESSAGE("Writing results to output file .......");
-		collect_results(ssd, host, (workload_defs_file_path.substr(0, workload_defs_file_path.find_last_of(".")) + "_scenario_" + std::to_string(cntr) + ".xml").c_str());
+		collect_results(ssd, host, (workload_defs_file_path.substr(0, workload_defs_file_path.find_last_of(".")) + "_scenario_" + std::to_string(cntr) + ".xml").c_str(), timeStr);
 	}
     cout << "Simulation complete; Press any key to exit." << endl;
 

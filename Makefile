@@ -24,7 +24,7 @@ endef
 all: checkdirs MQSim 
 
 run:
-	./MQSim -i ./ssdconfig_debug.xml -w ./workload_debug.xml
+	./MQSim -i ./ssdconfig.xml -w ./workload.xml
 
 MQSim: $(OBJ)
 	$(LD) $^ -o $@
