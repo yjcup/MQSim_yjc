@@ -89,7 +89,7 @@ namespace SSD_Components
 				//遍历队列汇
 				if (transaction_is_ready(*it) && (*it)->Address.DieID == dieID && !(planeVector & 1 << (*it)->Address.PlaneID))
 				{
-					//Check for identical pages when running multiplane command
+					//Check for identical pages when running multiplan	e command
 					if (planeVector == 0 || (*it)->Address.PageID == pageID)
 					{
 						(*it)->SuspendRequired = suspensionRequired;

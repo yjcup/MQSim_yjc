@@ -211,6 +211,7 @@ void TSU_OutOfOrder::Schedule()
 		}
 	}
 	// 遍历每套通道
+	//之前是将拆分的请求放到队列当中,到这里才是控制优先级
 	for (flash_channel_ID_type channelID = 0; channelID < channel_count; channelID++)
 	{	
 		//  
@@ -244,6 +245,8 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 	Flash_Transaction_Queue *sourceQueue1 = NULL, *sourceQueue2 = NULL;
 
 	//Flash transactions that are related to FTL mapping data have the highest priority
+	//如果gc在urgent模式,就是gc优先于用户读
+	
 	if (MappingReadTRQueue[chip->ChannelID][chip->ChipID].size() > 0)
 	{
 		sourceQueue1 = &MappingReadTRQueue[chip->ChannelID][chip->ChipID];

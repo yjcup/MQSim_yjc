@@ -105,7 +105,7 @@ namespace SSD_Components
 		double overprovisioning_ratio;
 		bool fold_large_addresses;
 		bool mapping_table_stored_on_flash;
-
+		// 实现多态的
 		virtual bool query_cmt(NVM_Transaction_Flash* transaction) = 0;
 		virtual PPA_type online_create_entry_for_reads(LPA_type lpa, const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& read_address, uint64_t read_sectors_bitmap) = 0;
 		virtual void manage_user_transaction_facing_barrier(NVM_Transaction_Flash* transaction) = 0;

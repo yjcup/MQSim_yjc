@@ -11,6 +11,7 @@ namespace NVM
 		struct PageMetadata
 		{
 			//page_status_type Status;
+			// 这种设计应该是方便扩展 可以自行向元数据中添加数据
 			LPA_type LPA;
 		};
 

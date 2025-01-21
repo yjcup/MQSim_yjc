@@ -94,7 +94,7 @@ namespace MQSimEngine
 			_sim_time = ev->Fire_time;
 
 			while (ev != NULL) {
-				if(!ev->Ignore) {
+				if(!ev->Ignore) {	
 					ev->Target_sim_object->Execute_simulator_event(ev);
 				}
 				Sim_Event* consumed_event = ev;

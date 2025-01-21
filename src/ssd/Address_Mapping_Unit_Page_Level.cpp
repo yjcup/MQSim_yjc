@@ -486,7 +486,7 @@ namespace SSD_Components
   			it != transactionList.end(); ) {
 			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
 				//iterator should be post-incremented since the iterator may be deleted from list
-				//如果正在被垃圾回收，进行处理
+				//当gc移动这个lpa的时候，需要读或写数据，就需要进行延后处理
 				manage_user_transaction_facing_barrier((NVM_Transaction_Flash*)*(it++));
 			} else {
 				query_cmt((NVM_Transaction_Flash*)(*it++));
@@ -503,6 +503,7 @@ namespace SSD_Components
 					ftl->TSU->Submit_transaction(static_cast<NVM_Transaction_Flash*>(*it));
 					if (((NVM_Transaction_Flash*)(*it))->Type == Transaction_Type::WRITE) {
 						if (((NVM_Transaction_Flash_WR*)(*it))->RelatedRead != NULL) {
+							//将关联读也要提交
 							ftl->TSU->Submit_transaction(((NVM_Transaction_Flash_WR*)(*it))->RelatedRead);
 						}
 					}
@@ -519,7 +520,7 @@ namespace SSD_Components
 		stream_id_type stream_id = transaction->Stream_id;
 		Stats::total_CMT_queries++;
  		Stats::total_CMT_queries_per_stream[stream_id]++;
-		//映射表是是否能访问
+		//映射表是是否能访问 如果是无限cmt或者cmt可以访问的话，第一个
 		if (domains[stream_id]->Mapping_entry_accessible(ideal_mapping_table, stream_id, transaction->LPA))//Either limited or unlimited CMT
 		{
 			Stats::CMT_hits_per_stream[stream_id]++;

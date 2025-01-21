@@ -210,7 +210,7 @@ void TSU_Priority_OutOfOrder::Schedule()
     {
         return;
     }
-
+    //transaction_receive_slots 该请求所有 transaction
     for (std::list<NVM_Transaction_Flash *>::iterator it = transaction_receive_slots.begin();
          it != transaction_receive_slots.end();
          it++)
@@ -220,10 +220,13 @@ void TSU_Priority_OutOfOrder::Schedule()
         case Transaction_Type::READ:
             switch ((*it)->Source)
             {
+                //一共有四种来源
             case Transaction_Source_Type::CACHE:
             case Transaction_Source_Type::USERIO:
                 if ((*it)->Priority_class != IO_Flow_Priority_Class::UNDEFINED)
                 {
+
+                    //三级列表  channel chip priorityclass
                     UserReadTRQueue[(*it)->Address.ChannelID][(*it)->Address.ChipID][static_cast<int>((*it)->Priority_class)].push_back((*it));
                 }
                 else
@@ -288,7 +291,10 @@ void TSU_Priority_OutOfOrder::Schedule()
                         service_erase_transaction(chip);
                     }
                 }
+                // 
+                // 轮询
                 Round_robin_turn_of_channel[channelID] = (flash_chip_ID_type)(Round_robin_turn_of_channel[channelID] + 1) % chip_no_per_channel;
+                // 只要channel没有闲置,就可以继续运行chip
                 if (_NVMController->Get_channel_status(chip->ChannelID) != BusChannelStatus::IDLE)
                 {
                     break;
@@ -331,7 +337,7 @@ Flash_Transaction_Queue *TSU_Priority_OutOfOrder::get_next_read_service_queue(NV
 
     return NULL;
 }
-
+// 先读后写最后擦除
 bool TSU_Priority_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip)
 {
     Flash_Transaction_Queue *sourceQueue1 = NULL, *sourceQueue2 = NULL;

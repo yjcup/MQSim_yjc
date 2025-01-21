@@ -86,8 +86,9 @@ inline void Input_Stream_Manager_NVMe::Handle_new_arrived_request(User_Request *
 	{ //This is a write request
 		((Input_Stream_NVMe *)input_streams[request->Stream_id])->Waiting_user_requests.push_back(request);
 		((Input_Stream_NVMe *)input_streams[request->Stream_id])->STAT_number_of_write_requests++;
+		//还需要抓取write data
 		((Host_Interface_NVMe *)host_interface)->request_fetch_unit->Fetch_write_data(request);
-	}
+	}	
 }
 
 inline void Input_Stream_Manager_NVMe::Handle_arrived_write_data(User_Request *request)

@@ -271,6 +271,9 @@ namespace SSD_Components
 		return static_wearleveling_enabled && (block_manager->Get_min_max_erase_difference(plane_address) >= static_wearleveling_threshold);
 	}
 
+
+	//就是将目标的数据搬到最冷的块???
+
 	void GC_and_WL_Unit_Base::run_static_wearleveling(const NVM::FlashMemory::Physical_Page_Address plane_address)
 	{
 		PlaneBookKeepingType* pbke = block_manager->Get_plane_bookkeeping_entry(plane_address);
@@ -286,6 +289,7 @@ namespace SSD_Components
 		//Run the state machine to protect against race condition
 		block_manager->GC_WL_started(wl_candidate_block_id);
 		pbke->Ongoing_erase_operations.insert(wl_candidate_block_id);
+		//set barrier 设置屏障 就是lock 之后的请求不能请求
 		address_mapping_unit->Set_barrier_for_accessing_physical_block(wl_candidate_address);//Lock the block, so no user request can intervene while the GC is progressing
 		if (block_manager->Can_execute_gc_wl(wl_candidate_address)) {//If there are ongoing requests targeting the candidate block, the gc execution should be postponed
 			Stats::Total_wl_executions++;

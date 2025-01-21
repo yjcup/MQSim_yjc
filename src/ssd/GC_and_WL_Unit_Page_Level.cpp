@@ -28,6 +28,7 @@ namespace SSD_Components
 		}
 
 		NVM::FlashMemory::Physical_Page_Address addr;
+		//以chip单位进行数据迁移
 		addr.ChannelID = chip->ChannelID; addr.ChipID = chip->ChipID;
 		for (unsigned int die_id = 0; die_id < die_no_per_chip; die_id++) {
 			for (unsigned int plane_id = 0; plane_id < plane_no_per_die; plane_id++) {
