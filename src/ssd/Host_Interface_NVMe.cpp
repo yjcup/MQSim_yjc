@@ -170,6 +170,8 @@ inline void Input_Stream_Manager_NVMe::inform_host_request_completed(stream_id_t
 	}
 }
 
+
+//将数据切分成逻辑页
 void Input_Stream_Manager_NVMe::segment_user_request(User_Request *user_request)
 {
 	//切分就是

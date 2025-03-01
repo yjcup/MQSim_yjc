@@ -14,7 +14,7 @@
 		<HostInterface_Type>NVME</HostInterface_Type>
 		<IO_Queue_Depth>65535</IO_Queue_Depth>
 		<Queue_Fetch_Size>512</Queue_Fetch_Size>
-		<Caching_Mechanism>ADVANCED</Caching_Mechanism>
+		<Caching_Mechanism>SIMPLE</Caching_Mechanism>
 		<Data_Cache_Sharing_Mode>SHARED</Data_Cache_Sharing_Mode>
 		<Data_Cache_Capacity>268435456</Data_Cache_Capacity>
 		<Data_Cache_DRAM_Row_Size>8192</Data_Cache_DRAM_Row_Size>
@@ -24,7 +24,7 @@
 		<Data_Cache_DRAM_tCL>13</Data_Cache_DRAM_tCL>
 		<Data_Cache_DRAM_tRP>13</Data_Cache_DRAM_tRP>
 		<Address_Mapping>PAGE_LEVEL</Address_Mapping>
-		<Ideal_Mapping_Table>true</Ideal_Mapping_Table>
+		<Ideal_Mapping_Table>false</Ideal_Mapping_Table>
 		<CMT_Capacity>2097152</CMT_Capacity>
 		<CMT_Sharing_Mode>SHARED</CMT_Sharing_Mode>
 		<Plane_Allocation_Scheme>CWDP</Plane_Allocation_Scheme>
@@ -48,7 +48,7 @@
 		<Flash_Comm_Protocol>NVDDR2</Flash_Comm_Protocol>
 		<Flash_Parameter_Set>
 		<!-- 不知道这边是如何处理MLC的 -->
-			<Flash_Technology>MLC</Flash_Technology>
+			<Flash_Technology>SLC</Flash_Technology>
 			<CMD_Suspension_Support>ERASE</CMD_Suspension_Support>
 			<Page_Read_Latency_LSB>75000</Page_Read_Latency_LSB>
 			<Page_Read_Latency_CSB>75000</Page_Read_Latency_CSB>

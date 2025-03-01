@@ -248,7 +248,7 @@ namespace SSD_Components
 	inline void AddressMappingDomain::Update_mapping_info(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa, const PPA_type ppa, const page_status_type page_status_bitmap)
 	{
 		if (ideal_mapping) {
-			GlobalMappingTable[lpa].PPA = ppa;
+			GlobalMappingTable[lpa].PPA = ppa; 
 			GlobalMappingTable[lpa].WrittenStateBitmap = page_status_bitmap;
 			GlobalMappingTable[lpa].TimeStamp = CurrentTimeStamp;
 		} else {
@@ -521,6 +521,8 @@ namespace SSD_Components
 		Stats::total_CMT_queries++;
  		Stats::total_CMT_queries_per_stream[stream_id]++;
 		//映射表是是否能访问 如果是无限cmt或者cmt可以访问的话，第一个
+		// 注意这个mapping_entry_accessible 是根据理想映射表来判断的	
+
 		if (domains[stream_id]->Mapping_entry_accessible(ideal_mapping_table, stream_id, transaction->LPA))//Either limited or unlimited CMT
 		{
 			Stats::CMT_hits_per_stream[stream_id]++;
@@ -589,15 +591,17 @@ namespace SSD_Components
 	/*This function should be invoked only if the address translation entry exists in CMT.
 	* Otherwise, the call to the CMT->Rerieve_ppa, within this function, will throw an exception.
 	*/
+// 之前是使用ideal来判断是否在cmt
 	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction)
 	{
-		// 得到ppa
+		// 首先在cmt中查找ppa，如果没有就要创建一个
 		PPA_type ppa = domains[streamID]->Get_ppa(ideal_mapping_table, streamID, transaction->LPA);
 
 		if (transaction->Type == Transaction_Type::READ) {
 			if (ppa == NO_PPA) {
 				//如果是18446744073709551615这个书的话就是noppa
 				//这个应该就是初始化的 时候给创建一个 根据逻辑地址创建一个读的地址 
+				//
 				ppa = online_create_entry_for_reads(transaction->LPA, streamID, transaction->Address, ((NVM_Transaction_Flash_RD*)transaction)->read_sectors_bitmap);
 			}
 			transaction->PPA = ppa;
@@ -607,6 +611,7 @@ namespace SSD_Components
 			
 			return true;
 		} else {//This is a write transaction
+			//
 			// 只有写操作会触发gc
 			// 先根据逻辑地址给他分配新的plane address
 			allocate_plane_for_user_write((NVM_Transaction_Flash_WR*)transaction);
@@ -1011,7 +1016,60 @@ namespace SSD_Components
 			case Flash_Plane_Allocation_Scheme_Type::CWDP:
 			// 逐级平分 channel-->chip-->die-->plane
 			// 那边为什么要这么做
-			//好像能解释通了
+			//好像能解释通了	
+
+			//直接举一个例子来演示，下面就是channel，chip的分配
+			/**
+			 * 
+							LPN序列: 0,1,2,3,4,5,6,7... (假设每个层级都是2个单元)
+
+					Channel_no=2, Chip_no=2, Die_no=2, Plane_no=2
+
+					Level 1 - Channel分配 (LPN % 2):
+					C0: 0,2,4,6,...
+					C1: 1,3,5,7,...
+
+					Level 2 - Chip分配 (每个Channel内):
+					C0-W0: 0,4,...    C1-W0: 1,5,...
+					C0-W1: 2,6,...    C1-W1: 3,7,...
+
+					Level 3 - Die分配:
+					C0-W0-D0: 0,...   C1-W0-D0: 1,...
+					C0-W0-D1: 4,...   C1-W0-D1: 5,...
+					C0-W1-D0: 2,...   C1-W1-D0: 3,...
+					C0-W1-D1: 6,...   C1-W1-D1: 7,...
+
+					Level 4 - Plane分配:
+										Channel 0                                    Channel 1
+							┌────────────────────────────┐            ┌────────────────────────────┐
+							│           Chip 0           │            │           Chip 0           │
+							│    ┌─────────┐┌─────────┐ │            │    ┌─────────┐┌─────────┐ │
+							│Die0│Plane 0  ││Plane 1  │ │            │Die0│Plane 0  ││Plane 1  │ │
+							│    │   0     ││   8     │ │            │    │   1     ││   9     │ │
+							│    └─────────┘└─────────┘ │            │    └─────────┘└─────────┘ │
+							│    ┌─────────┐┌─────────┐ │            │    ┌─────────┐┌─────────┐ │
+							│Die1│Plane 0  ││Plane 1  │ │            │Die1│Plane 0  ││Plane 1  │ │
+							│    │   4     ││   12    │ │            │    │   5     ││   13    │ │
+							│    └─────────┘└─────────┘ │            │    └─────────┘└─────────┘ │
+							└────────────────────────────┘            └────────────────────────────┘
+							┌────────────────────────────┐            ┌────────────────────────────┐
+							│           Chip 1           │            │           Chip 1           │
+							│    ┌─────────┐┌─────────┐ │            │    ┌─────────┐┌─────────┐ │
+							│Die0│Plane 0  ││Plane 1  │ │            │Die0│Plane 0  ││Plane 1  │ │
+							│    │   2     ││   10    │ │            │    │   3     ││   11    │ │
+							│    └─────────┘└─────────┘ │            │    └─────────┘└─────────┘ │
+							│    ┌─────────┐┌─────────┐ │            │    ┌─────────┐┌─────────┐ │
+							│Die1│Plane 0  ││Plane 1  │ │            │Die1│Plane 0  ││Plane 1  │ │
+							│    │   6     ││   14    │ │            │    │   7     ││   15    │ │
+							│    └─────────┘└─────────┘ │            │    └─────────┘└─────────┘ │
+							└────────────────────────────┘            └────────────────────────────┘
+			 * 
+			 * 
+			 * 
+			 * 			除法就是相当于把地址按照顺序平分成几份
+			 * 
+			 * 
+			 */
 				targetAddress.ChannelID = domain->Channel_ids[(unsigned int)(lpn % domain->Channel_no)];//平分到channel
 				//可以看作chip1有8个 chip2 有8 个 chip 3 有8 个
 				targetAddress.ChipID = domain->Chip_ids[(unsigned int)((lpn / domain->Channel_no) % domain->Chip_no)];//平分
@@ -1481,15 +1539,25 @@ namespace SSD_Components
 			+ this->pages_no_per_block * pageAddress.BlockID + pageAddress.PageID;
 	}
 
+	//cache 是
+
 	bool Address_Mapping_Unit_Page_Level::request_mapping_entry(const stream_id_type stream_id, const LPA_type lpa)
 	{
 		AddressMappingDomain* domain = domains[stream_id];
-		MVPN_type mvpn = get_MVPN(lpa, stream_id);
 
+
+
+		//GTD 记录了 MVPN → MPPN（Physical Translation Page Number，物理翻译页号） 的映射关系。
+		//gtd就是MVPN → MPPN的映射关系，就是翻译页实际的物理地址
+		// 通过逻辑页号算出MVPN，然后根据MVPN在gtd中查找MPPN
+		MVPN_type mvpn = get_MVPN(lpa, stream_id);
 		/*This is the first time that a user request accesses this address.
 		Just create an entry in cache! No flash read is needed.*/
+		
 		if (domain->GlobalTranslationDirectory[mvpn].MPPN == NO_MPPN) {
+			//如果gtd中没有找到MPPN，说明这个逻辑页没有被映射过，直接在cmt中插入新的映射信息
 			if (!domain->CMT->Check_free_slot_availability()) {
+				//如果cmt中没有空闲的槽位，则需要淘汰一个槽位
 				LPA_type evicted_lpa;
 				CMTSlotType evictedItem = domain->CMT->Evict_one_slot(evicted_lpa);
 				if (evictedItem.Dirty) {
@@ -1506,6 +1574,7 @@ namespace SSD_Components
 				}
 			}
 			domain->CMT->Reserve_slot_for_lpn(stream_id, lpa);
+			//向cmt中插入新的映射信息，
 			domain->CMT->Insert_new_mapping_info(stream_id, lpa, NO_PPA, UNWRITTEN_LOGICAL_PAGE);
 			
 			return true;
@@ -1517,6 +1586,8 @@ namespace SSD_Components
 		*     with the changed parts (i.e., an update read of MVP). This read will be followed
 		*     by a writeback of MVP content to a new flash page.
 		* 2. A read has been issued to retrieve the mapping data for some previous user requests*/
+
+		//这里应该是关于映射表合并相关的 
 		if (domain->ArrivingMappingEntries.find(mvpn) != domain->ArrivingMappingEntries.end())
 		{
 			if (domain->CMT->Is_slot_reserved_for_lpn_and_waiting(stream_id, lpa)) {
@@ -1755,6 +1826,7 @@ namespace SSD_Components
 									_my_instance->mange_unsuccessful_translation(it2->second);
 								}
 							}
+							
 							_my_instance->domains[transaction->Stream_id]->Waiting_unmapped_program_transactions.erase(it2++);
 						}
 					}
