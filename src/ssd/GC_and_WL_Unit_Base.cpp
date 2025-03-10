@@ -66,6 +66,9 @@ namespace SSD_Components
 				// 要执行gc需要两个条件：1.有效块小于某个阈值2.该快中没有要执行的读写操作了
 				// 如果在checked_gc开始需要gc了，但是有可能块中还有没执行完的读写操作，
 				// 所以有新的读写操作完成的时候要判断一下，如果条件都满足的话，就可以开始执行gc了
+
+				// has_ongoing_gc flag会在检查是否需要gc的时候标记，如果需要gc但是block还有读操作的话
+				// 就不能gc，在这边，如果一个读写操作完成，块内可能没有操作了，就可以进行gc了
 				if (_my_instance->block_manager->Block_has_ongoing_gc_wl(transaction->Address)) {
 					// 队列中要没有待执行的任务了
 					if (_my_instance->block_manager->Can_execute_gc_wl(transaction->Address)) {

@@ -144,6 +144,7 @@ void TSU_OutOfOrder::Report_results_in_XML(std::string name_prefix, Utils::XmlWr
 
 // 全局的调度方法，请求过来
 //每个请求完成之后都会执行检查该通道是否idle，他会继续遍历其他chip
+// 调度实际上就是按照一定顺行将request发送到指定的plane上
 void TSU_OutOfOrder::Schedule()
 {
 	opened_scheduling_reqs--;
@@ -246,7 +247,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 
 	//Flash transactions that are related to FTL mapping data have the highest priority
 	//如果gc在urgent模式,就是gc优先于用户读
-	
+	// 1.mapping读取，2.gc读取，3.用户读取
 	if (MappingReadTRQueue[chip->ChannelID][chip->ChipID].size() > 0)
 	{
 		sourceQueue1 = &MappingReadTRQueue[chip->ChannelID][chip->ChipID];
@@ -281,6 +282,7 @@ bool TSU_OutOfOrder::service_read_transaction(NVM::FlashMemory::Flash_Chip *chip
 		}
 		else if (UserReadTRQueue[chip->ChannelID][chip->ChipID].size() > 0)
 		{
+			//这里是gc urgent模型，读也要滞后
 			sourceQueue1 = &UserReadTRQueue[chip->ChannelID][chip->ChipID];
 		}
 		else

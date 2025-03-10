@@ -147,13 +147,10 @@ MQSim finished at Mon Nov 25 07:46:47 2024
 Total simulation time: 0:3:42
 ```
 
-   
-
-   
-
-   
-
-   
-
-
+## 关于precondition
+就是ssd初始化的时候会添加设置让ssd更加接近真实场景
+主要目的:
+模拟SSD在实际使用一段时间后的状态，而不是全新的空白状态
+根据预设的稳态分布(steady state distribution)来初始化闪存块的使用情况
+建立初始的逻辑地址(LPA)到物理地址(PPA)的映射关系
 

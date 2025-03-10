@@ -489,6 +489,8 @@ namespace SSD_Components
 				//当gc移动这个lpa的时候，需要读或写数据，就需要进行延后处理
 				manage_user_transaction_facing_barrier((NVM_Transaction_Flash*)*(it++));
 			} else {
+
+				// 这个方法实际就是lpa-ppa的
 				query_cmt((NVM_Transaction_Flash*)(*it++));
 			}
 		}
@@ -569,6 +571,7 @@ namespace SSD_Components
 					return false;
 				}
 			} else {
+				//cmt中没有需要等待
 				if (transaction->Type == Transaction_Type::READ) {
 					Stats::total_readTR_CMT_queries++;
 					Stats::total_readTR_CMT_queries_per_stream[stream_id]++;
@@ -595,9 +598,13 @@ namespace SSD_Components
 	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction)
 	{
 		// 首先在cmt中查找ppa，如果没有就要创建一个
+		// cmt（）
 		PPA_type ppa = domains[streamID]->Get_ppa(ideal_mapping_table, streamID, transaction->LPA);
 
 		if (transaction->Type == Transaction_Type::READ) {
+			//如果到这里但是没有ppa的话，那就是一个page的第一个，在cmt中存在但是实际的ppa还没生成
+			 /*this is the first access to the logical page*/
+			 // 实际就是上面这句话
 			if (ppa == NO_PPA) {
 				//如果是18446744073709551615这个书的话就是noppa
 				//这个应该就是初始化的 时候给创建一个 根据逻辑地址创建一个读的地址 
@@ -1230,8 +1237,8 @@ namespace SSD_Components
 		//翻译地址：缓存中没有去取，取完之后，之后有两种可能，一种是ssd中这种地址第一次访问，没有改地址，要么就是之前有地址 
 		AddressMappingDomain* domain = domains[transaction->Stream_id];
 		PPA_type old_ppa = domain->Get_ppa(ideal_mapping_table, transaction->Stream_id, transaction->LPA);
-
-		if (old_ppa == NO_PPA)  /*this is the first access to the logical page*/
+		//this is the first access to the logical page
+		if (old_ppa == NO_PPA) 
 		{
 			if (is_for_gc) {
 				PRINT_ERROR("Unexpected mapping table status in allocate_page_in_plane_for_user_write function for a GC/WL write!")
@@ -1541,6 +1548,9 @@ namespace SSD_Components
 
 	//cache 是
 
+
+	//Maybe we can catch mapping data from an on-the-fly write back request
+	// 如果返回为true就是应该捕捉到了			
 	bool Address_Mapping_Unit_Page_Level::request_mapping_entry(const stream_id_type stream_id, const LPA_type lpa)
 	{
 		AddressMappingDomain* domain = domains[stream_id];
@@ -1550,10 +1560,13 @@ namespace SSD_Components
 		//GTD 记录了 MVPN → MPPN（Physical Translation Page Number，物理翻译页号） 的映射关系。
 		//gtd就是MVPN → MPPN的映射关系，就是翻译页实际的物理地址
 		// 通过逻辑页号算出MVPN，然后根据MVPN在gtd中查找MPPN
+		
 		MVPN_type mvpn = get_MVPN(lpa, stream_id);
+
 		/*This is the first time that a user request accesses this address.
 		Just create an entry in cache! No flash read is needed.*/
-		
+		//mvpn是安装lpa顺序算出来的，为什么会出现no_mppn的情况呢，
+		// 就是第一次出现，还没有映射过
 		if (domain->GlobalTranslationDirectory[mvpn].MPPN == NO_MPPN) {
 			//如果gtd中没有找到MPPN，说明这个逻辑页没有被映射过，直接在cmt中插入新的映射信息
 			if (!domain->CMT->Check_free_slot_availability()) {
@@ -1573,6 +1586,8 @@ namespace SSD_Components
 					generate_flash_writeback_request_for_mapping_data(stream_id, evicted_lpa);
 				}
 			}
+
+			//到这里是如果是这个page是第一个写入block的话，就先不写入，但是回向cmt中插入新的映射信息
 			domain->CMT->Reserve_slot_for_lpn(stream_id, lpa);
 			//向cmt中插入新的映射信息，
 			domain->CMT->Insert_new_mapping_info(stream_id, lpa, NO_PPA, UNWRITTEN_LOGICAL_PAGE);
@@ -1588,6 +1603,9 @@ namespace SSD_Components
 		* 2. A read has been issued to retrieve the mapping data for some previous user requests*/
 
 		//这里应该是关于映射表合并相关的 
+		//ArrivingMappingEntries这个是干啥的
+		// 这个是记录了正在进行的读取操作，
+		// 就是向cmt插入映射信息，但是还没有完成
 		if (domain->ArrivingMappingEntries.find(mvpn) != domain->ArrivingMappingEntries.end())
 		{
 			if (domain->CMT->Is_slot_reserved_for_lpn_and_waiting(stream_id, lpa)) {
@@ -1618,6 +1636,7 @@ namespace SSD_Components
 
 		/*MQSim assumes that the data of all departing (evicted from CMT) translation pages are in memory, until
 		the flash program operation finishes and the entry it is cleared from DepartingMappingEntries.*/
+		// 就是将剔除的回写数据写操作还没完成之前，他还在内存中，如果又有一个数据来读取，那么它会重新进入
 		if (domain->DepartingMappingEntries.find(mvpn) != domain->DepartingMappingEntries.end()) {
 			if (!domain->CMT->Check_free_slot_availability()) {
 				LPA_type evicted_lpa;
@@ -1639,7 +1658,7 @@ namespace SSD_Components
 			/*Hack: since we do not actually save the values of translation requests, we copy the mapping
 			data from GlobalMappingTable (which actually must be stored on flash)*/
 			domain->CMT->Insert_new_mapping_info(stream_id, lpa,
-				domain->GlobalMappingTable[lpa].PPA, domain->GlobalMappingTable[lpa].WrittenStateBitmap);
+			domain->GlobalMappingTable[lpa].PPA, domain->GlobalMappingTable[lpa].WrittenStateBitmap);
 			
 			return true;
 		}
@@ -1733,7 +1752,7 @@ namespace SSD_Components
 		if (mvpn >= domains[stream_id]->Total_translation_pages_no) {
 			PRINT_ERROR("Out of range virtual translation page number!")
 		}
-
+		//正在进行翻译的lpa
 		domains[stream_id]->ArrivingMappingEntries.insert(std::pair<MVPN_type, LPA_type>(mvpn, lpn));
 
 		if (is_mvpn_locked_for_gc(stream_id, mvpn)) {

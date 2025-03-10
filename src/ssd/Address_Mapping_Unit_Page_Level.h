@@ -27,6 +27,7 @@ namespace SSD_Components
 	struct CMTSlotType
 	{
 		PPA_type PPA;
+		// block的写入信息
 		unsigned long long WrittenStateBitmap;
 		bool Dirty;
 		CMTEntryStatus Status;

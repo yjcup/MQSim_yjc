@@ -70,6 +70,8 @@ namespace SSD_Components
 		void Add_to_free_block_pool(Block_Pool_Slot_Type* block, bool consider_dynamic_wl);
 	};
 
+
+	// 模拟的控制芯片，可以存储原数据
 	class Flash_Block_Manager_Base
 	{
 		friend class Address_Mapping_Unit_Page_Level;

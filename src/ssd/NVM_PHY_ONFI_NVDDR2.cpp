@@ -128,11 +128,14 @@ namespace SSD_Components {
 		channels[page_address.ChannelID]->Chips[page_address.ChipID]->Change_memory_status_preconditioning(&page_address, &lpa);
 	}
 	// 有请求过来了，如何拆分了
+	//到这里的都是同一个die可以多plane操作的transaction
 	void NVM_PHY_ONFI_NVDDR2::Send_command_to_chip(std::list<NVM_Transaction_Flash*>& transaction_list)
 	{	// 这里面都是同一个die的队列
 		ONFI_Channel_NVDDR2* target_channel = channels[transaction_list.front()->Address.ChannelID];
 		// 这边都是处理的队列头
 		NVM::FlashMemory::Flash_Chip* targetChip = target_channel->Chips[transaction_list.front()->Address.ChipID];
+		//这两个都是用来管理chip，die的元数据的芯片
+		//transaction_list 都是一个chip
 		ChipBookKeepingEntry* chipBKE = &bookKeepingTable[transaction_list.front()->Address.ChannelID][transaction_list.front()->Address.ChipID];
 		DieBookKeepingEntry* dieBKE = &chipBKE->Die_book_keeping_records[transaction_list.front()->Address.DieID];
 
@@ -186,6 +189,7 @@ namespace SSD_Components {
 
 		switch (transaction_list.front()->Type) {
 			case Transaction_Type::READ:
+				// 设置commandcode
 				if (transaction_list.size() == 1) {
 					Stats::IssuedReadCMD++;
 					dieBKE->ActiveCommand->CommandCode = CMD_READ_PAGE;
@@ -210,10 +214,12 @@ namespace SSD_Components {
 						dieBKE, (int)NVDDR2_SimEventType::READ_CMD_ADDR_TRANSFERRED);
 				} else {
 					//最小的就是die并行 使用interleave操作
+					// interleave就是流水线操作
 					dieBKE->DieInterleavedTime = suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 					chipBKE->Last_transfer_finish_time += suspendTime + target_channel->ReadCommandTime[transaction_list.size()];
 				}
 				// 如果里面有，说明还在执行，可以直接放进去就行
+				//这里就是用来设计interleave的，如果里面有，还是放一个，到时候弹出其他的他还在里面就会执行interleave操作
 				chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
 				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
@@ -395,6 +401,7 @@ namespace SSD_Components {
 			case NVDDR2_SimEventType::PROGRAM_CMD_ADDR_DATA_TRANSFERRED:
 			case NVDDR2_SimEventType::PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED:
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID <<  ": PROGRAM_CMD_ADDR_DATA_TRANSFERRED " )
+				// 执行命令，
 				targetChip->EndCMDDataInXfer(dieBKE->ActiveCommand);
 				for (auto &tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
