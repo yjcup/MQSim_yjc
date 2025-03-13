@@ -83,13 +83,23 @@ namespace NVM
 			typedef void(*ChipReadySignalHandlerType) (Flash_Chip* targetChip, Flash_Command* command);
 			void Connect_to_chip_ready_signal(ChipReadySignalHandlerType);
 			
+
+			//
 			sim_time_type Get_command_execution_latency(command_code_type CMDCode, flash_page_ID_type pageID)
 			{
 				int latencyType = 0;
 				if (flash_technology == Flash_Technology_Type::MLC) {
+					//在分配地址的时候，就是按照page顺序向后分配的	
 					latencyType = pageID % 2;
 				} else if (flash_technology == Flash_Technology_Type::TLC) {
 					//From: Yaakobi et al., "Characterization and Error-Correcting Codes for TLC Flash Memories", ICNC 2012
+					// 	实际的清况就是这样
+
+
+					// 0  1  2  3  4  5  8  9  14 15 20 21 …  (每 6 递增)
+					// 6  7  10 11 16 17 22 23 …  (每 6 递增)
+					// 12 13 18 19 24 25 …  (每 6 递增)
+
 					latencyType = (pageID <= 5) ? 0 : ((pageID <= 7) ? 1 : (((pageID - 8) >> 1) % 3));;
 				}
 

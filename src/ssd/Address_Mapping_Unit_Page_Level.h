@@ -95,6 +95,7 @@ namespace SSD_Components
 
 		/*The logical to physical address mapping of all data pages that is implemented based on the DFTL (Gupta et al., ASPLOS 2009(
 		* proposal. It is always stored in non-volatile flash memory.*/
+		//就是全局数据翻译，存放到flash_page
 		GMTEntryType* GlobalMappingTable;
 		void Update_mapping_info(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa, const PPA_type ppa, const page_status_type page_status_bitmap);
 		page_status_type Get_page_status(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa);

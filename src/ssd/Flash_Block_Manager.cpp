@@ -102,6 +102,7 @@ namespace SSD_Components
 		plane_record->Valid_pages_count++;
 		plane_record->Free_pages_count--;
 		page_address.BlockID = plane_record->Translation_wf[streamID]->BlockID;
+		// ppa 按顺序定的
 		page_address.PageID = plane_record->Translation_wf[streamID]->Current_page_write_index++;
 		program_transaction_issued(page_address);
 
